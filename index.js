@@ -59,7 +59,7 @@ client.on('message', msg => {
     }
     //unvote
     else if (content.startsWith("unvote")) {
-        vtl(msg);
+        unvote(msg);
     }
     //display the vote count
     else if (content.startsWith("mafia.votes") || content.startsWith("mafia.v")) {
@@ -218,9 +218,15 @@ function vtl(msg) {
         message = "No players with identifier found. "
     }
     else if(fields.players.length == 1) {
-        unvote(msg)
         votedPlayer = fields.players[0]
-        if(!(votedPlayer.name in game.votes)) game.votes[votedPlayer.name] = []
+        if(!(votedPlayer.alive)) {
+            msg.channel.send('This player is already dead!')
+            return
+        }
+        unvote(msg)
+        if(!(votedPlayer.name in game.votes)) {
+            game.votes[votedPlayer.name] = []
+        }
         game.votes[votedPlayer.name].push(msg.author.username)
         message = `**${msg.author.username}** voted **${votedPlayer.name}**`
         msg.channel.send(message)
@@ -272,15 +278,73 @@ function resetvotes(msg) {
     msg.channel.send("Votes reset")
 }
 
+function reset(msg) {
+    game = {
+        status: '',
+        mod: {
+            name: null
+        },
+        players: [],
+        votes: {}
+    }
+}
+
+function revive(msg) {
+    for(let player of game.players) {
+        player.alive = true
+    }
+}
+
+function revive(msg) {
+    for(let player of game.players) {
+        player.alive = true
+        player.note = ''
+    }
+
+    msg.channel.send("All players revived")
+}
+
+function help(msg) {
+    helpText = `
+        Welcome to MafiaBot by Bullish.
+
+        **Commands: **
+
+        \`mafia.mod\` = make yourself mod.
+        \`mafia.join\` = join the game.
+        \`mafia.add [playerName]\` = add a player; [playerName] must be exact.
+        \`mafia.kick [playerName]\` = add a player; [playerName] pattern matches.
+        \`mafia.players\` = list all players.
+        \`mafia.kill [playerName]\` = kills a player; [playerName] pattern matches.
+        \`vtl [playerName]\` = votes to lynch a player; [playerName] pattern matches.
+        \`unvote\` = unvotes.
+        \`votes\` = lists the current vote count.
+        \`mafia.resetvotes\` = resets the vote count to 0.
+        \`mafia.reset\` = reset all game variables.
+        \`mafia.revive\` = revive all players.
+        \`mafia.help\` = opens this help menu.
+    `
+
+    let embed = {
+        color: "888888",
+        title: "How to use this bot: ",
+        description: helpText
+    }
+
+    msg.channel.send({embed: embed})
+}
+
 function _getPlayers(msg) {
     let conentArray = msg.content.split(" ")
-    let name = conentArray[1]
+    let name = conentArray[1] || ''
     let context = conentArray[2] || ''
     let selectedPlayers = []
 
-    for(let player of game.players) {
-        if(player.name.toUpperCase().includes(name.toUpperCase())) {
-            selectedPlayers.push(player)
+    if(name != '' && name != null) {
+        for(let player of game.players) {
+            if(player.name.toUpperCase().includes(name.toUpperCase())) {
+                selectedPlayers.push(player)
+            }
         }
     }
 
