@@ -9,7 +9,10 @@ var game = {
     mod: {
         name: null
     },
-    players: []
+    players: [],
+    votes: {
+
+    }
 }
 
 client.on('ready', () => {
@@ -137,24 +140,14 @@ function add(msg) {
 }
 
 function kick(msg) {
-    let conentArray = msg.content.split(" ")
-    let name = conentArray[1]
-    let playerToKick = -1
-    let count = 0
-    for(let player of game.players) {
-        if(player.name.toUpperCase().includes(name.toUpperCase())) {
-            playerToKick = game.players.indexOf(player)
-            count++
-        }
-    }
+    let fields = _getPlayers(msg)
 
-    let message = ''
-    if(count == 0) {
+    if(fields.players.length == 0) {
         message = "No players with identifier found. "
     }
-    else if(count == 1) {
-        players.splice(i, 1)
-        message = `Removed player: **${game.players[playerToKick].name}**`
+    else if(fields.players.length == 1) {
+        game.players.splice(game.players.indexOf(fields.players[0]), 1)
+        message = `Removed player: **${fields.players[0].name}**`
     }
     else {
         message = "Multiple players with identifier found, please be more specific. "
@@ -186,33 +179,37 @@ function players(msg) {
 }
 
 function kill(msg) {
-    let conentArray = msg.content.split(" ")
-    let name = conentArray[1]
-    let note = conentArray[2] || ''
-    let playerToKill = null
-    let count = 0
+    let fields = _getPlayers(msg)
 
-    console.log('name', name)
-
-    for(let player of game.players) {
-        if(player.name.toUpperCase().includes(name.toUpperCase())) {
-            playerToKill = player
-            count++
-        }
-    }
-
-    let message = ''
-    if(count == 0) {
+    if(fields.players.length == 0) {
         message = "No players with identifier found. "
     }
-    else if(count == 1) {
-        playerToKill.alive = false
-        playerToKill.note = note
-        message = `Killed player: **${playerToKill.name}** - ${playerToKill.note}`
+    else if(fields.players.length == 1) {
+        fields.player[0].alive = false
+        fields.player[0].note = fields.context
+        message = `Killed player: **${fields.player[0].name}** - ${fields.player[0].note}`
     }
     else {
         message = "Multiple players with identifier found, please be more specific. "
     }
 
     msg.channel.send(message)
+}
+
+function _getPlayers(msg) {
+    let conentArray = msg.content.split(" ")
+    let name = conentArray[1]
+    let context = conentArray[2] || ''
+    let selectedPlayers = []
+
+    for(let player of game.players) {
+        if(player.name.toUpperCase().includes(name.toUpperCase())) {
+            selectedPlayers.push(player)
+        }
+    }
+
+    return {
+        players: selectedPlayers,
+        context: context
+    }
 }
