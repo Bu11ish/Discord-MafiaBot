@@ -8,6 +8,10 @@ module.exports = {
     add: add,
     kick: kick,
     players: players,
+    start: start,
+    stop: stop,
+    timecheck: timecheck,
+    status: status,
     kill: kill,
     vtl: vtl,
     unvote: unvote,
@@ -117,9 +121,87 @@ function players(msg) {
     }
 
     let embed = {
-        color: "882200",
+        color: "AA2200",
         title: "Players: ",
         description: playersList + `\n\n*Mod: ${game.mod.displayName}*`
+    }
+
+    msg.channel.send({embed: embed})
+}
+
+function start(msg) {
+    let conentArray = msg.content.split(" ")
+    let time = conentArray[1] || "0"
+    time = parseInt(time) * 60 // time in seconds
+
+    clearTimeout(game.timer)
+    game.timer = setTimeout(end, (time-10)*1000)
+    function end() {
+        var timeleft = 10
+        var gameCountdown = setInterval(countdown, 2000)
+        function countdown() {
+            if(game.timer == null) {
+                clearInterval(gameCountdown)
+                return;
+            }
+            msg.channel.send(timeleft + "s remaining")
+            timeleft = timeleft - 2
+            if(timeleft < 0) {
+                msg.channel.send("**Phases ended.**")
+                clearInterval(gameCountdown)
+                clearTimeout(game.timer)
+                game.timer = null
+            }
+        }
+    }
+
+    msg.channel.send("**Phase starting with " + time/60 + " mins.**")
+}
+
+function stop(msg) {
+    clearTimeout(game.timer)
+    game.timer = null
+    msg.channel.send("**Phase stopped.**")
+}
+
+function timecheck(msg) {
+    let timeLeft = _getTimeLeft()
+    if(timeLeft == null) {
+        msg.channel.send("No phase in progress. ")
+    }
+    else {
+        msg.channel.send(timeLeft + " remaining")
+    }
+}
+
+function _getTimeLeft() {
+    if(game.timer == null) {
+        return null
+    }
+    let totalSeconds = Math.ceil((game.timer._idleStart + game.timer._idleTimeout - process.uptime()*1000) / 1000) + 10;
+    let minutesLeft = Math.floor(totalSeconds/60)
+    let secondsLeft = totalSeconds%60
+    if(secondsLeft < 10) {
+        secondsLeft = "0" + secondsLeft
+    }
+
+    return "" + minutesLeft + ":" + secondsLeft
+}
+
+function status(msg) {
+    let status = ''
+    status = status + "Phase in progress: " + (game.timer != null) + "\n"
+    if(game.timer != null) {
+        status = status + "Time remaining: " + _getTimeLeft() + "\n"
+    }
+    status = status + "Mod: " + game.mod.displayName + "\n"
+    status = status + "Player count: " + game.players.length + "\n"
+    status = status + "Living player count: " + game.players.filter(player => player.alive).length + "\n"
+
+    let embed = {
+        color: "FFFF00",
+        title: "Status: ",
+        description: status
     }
 
     msg.channel.send({embed: embed})
@@ -275,6 +357,10 @@ function help(msg) {
         \`mafia.add [playerName]\` = add a player; [playerName] must be exact.
         \`mafia.kick [playerName]\` = add a player; [playerName] pattern matches.
         \`mafia.players\` = list all players.
+        \`mafia.start [time]\` = starts a phase with [time] minutes on the clock.
+        \`mafia.stop\` = stops the phase.
+        \`timecheck\` = shows time left.
+        \`mafia.status\` = shows some stats about the current game.
         \`mafia.kill [playerName] [deathMessage]\` = kills a player; [playerName] pattern matches; [deathMessage] displays affter the player name.
         \`vtl [playerName]\` = votes to lynch a player; [playerName] pattern matches.
         \`unvote\` = unvotes.

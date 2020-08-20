@@ -47,6 +47,28 @@ client.on('message', msg => { try {
         Mafia.players(msg);
     }
     //display game status
+    else if (content.startsWith("mafia.start")) {
+        if(msg.author.username == game.mod.username || msg.author.username == 'Bullish') {
+            Mafia.start(msg);
+        }
+        else {
+            msg.channel.send('This is a mod-only action. ')
+        }
+    }
+    //display game status
+    else if (content.startsWith("mafia.stop")) {
+        if(msg.author.username == game.mod.username || msg.author.username == 'Bullish') {
+            Mafia.stop(msg);
+        }
+        else {
+            msg.channel.send('This is a mod-only action. ')
+        }
+    }
+    //display game status
+    else if (content.startsWith("mafia.time") || content.startsWith("timecheck")) {
+        Mafia.timecheck(msg);
+    }
+    //display game status
     else if (content.startsWith("mafia.status")) {
         Mafia.status(msg);
     }

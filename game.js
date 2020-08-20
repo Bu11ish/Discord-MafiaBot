@@ -5,7 +5,8 @@ module.exports = {
             username: null,
             displayName: null
         },
-        players: []
+        players: [],
+        timer: null
     }
 }
 
