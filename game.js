@@ -2,7 +2,8 @@ module.exports = {
     game: {
         status: '',
         mod: {
-            name: null
+            username: null,
+            displayName: null
         },
         players: [],
         votes: {}

@@ -19,11 +19,12 @@ module.exports = {
 }
 
 function mod(msg) {
-    game.mod.name = msg.member.displayName
+    game.mod.username = msg.author.username
+    game.mod.displayName = msg.member.displayName
 
     let embed = {
         color: "FF00FF",
-        title: "The mod is: " + game.mod.name
+        title: "The mod is: " + game.mod.displayName
     }
 
     msg.channel.send({embed: embed})
@@ -116,7 +117,7 @@ function players(msg) {
     let embed = {
         color: "882200",
         title: "Players: ",
-        description: playersList + `\n\n*Mod: ${game.mod.name}*`
+        description: playersList + `\n\n*Mod: ${game.mod.displayName}*`
     }
 
     msg.channel.send({embed: embed})
@@ -261,7 +262,7 @@ function help(msg) {
         \`mafia.kill [playerName] [deathMessage]\` = kills a player; [playerName] pattern matches; [deathMessage] displays affter the player name.
         \`vtl [playerName]\` = votes to lynch a player; [playerName] pattern matches.
         \`unvote\` = unvotes.
-        \`votes\` = lists the current vote count.
+        \`mafia.votes\` = lists the current vote count.
         \`mafia.resetvotes\` = resets the vote count to 0.
         \`mafia.reset\` = reset all game variables.
         \`mafia.revive\` = revive all players.

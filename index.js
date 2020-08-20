@@ -2,11 +2,11 @@ var auth = require('./auth.json');
 var Mafia = require('./functions.js');
 var game = require('./game.js');
 
+var game = game.game
+
 const Discord = require('discord.js');
 const client = new Discord.Client();
 client.login(auth.token);
-
-var game = game.game
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -14,12 +14,12 @@ client.on('ready', () => {
 
 client.on('message', msg => { try {
     let content = msg.content.toLowerCase()
-    console.log('======= START =======');
-    console.log('msg', msg);
-    console.log('msg.nickname', msg.member.displayName);
+    // console.log('======= START =======');
+    // console.log('msg', msg);
+    // console.log('msg.nickname', msg.member.displayName);
     // console.log('msg.content', msg.content);
     // console.log('msg.embeds', msg.embeds);
-    console.log('======= END =======');
+    // console.log('======= END =======');
 
     //join a game as mod
     if (content.startsWith("mafia.mod")) {
@@ -35,7 +35,7 @@ client.on('message', msg => { try {
     }
     //kick player
     else if (content.startsWith("mafia.kick")) {
-        if(msg.member.displayName == game.mod.name || msg.author.username == 'Bullish') {
+        if(msg.author.username == game.mod.username || msg.author.username == 'Bullish') {
             Mafia.kick(msg);
         }
         else {
@@ -52,7 +52,7 @@ client.on('message', msg => { try {
     }
     //kill a player
     else if (content.startsWith("mafia.kill")) {
-        if(msg.member.displayName == game.mod.name || msg.author.username == 'Bullish') {
+        if(msg.author.username == game.mod.username || msg.author.username == 'Bullish') {
             Mafia.kill(msg);
         }
         else {
@@ -60,7 +60,7 @@ client.on('message', msg => { try {
         }
     }
     //vote to lynch a player
-    else if (content.startsWith("vtl") || content.startsWith("vote")) {
+    else if (content.startsWith("vtl") || content.startsWith("vte") || content.startsWith("vote")) {
         Mafia.vtl(msg);
     }
     //unvote
@@ -68,12 +68,12 @@ client.on('message', msg => { try {
         Mafia.unvote(msg);
     }
     //display the vote count
-    else if (content.startsWith("mafia.votes") || content.startsWith("mafia.v")) {
+    else if (content.startsWith("mafia.votes") || content.startsWith("mafia.votecount") || content.startsWith("mafia.v") || content.startsWith("mafia.vc")) {
         Mafia.votes(msg);
     }
     //reset vote count
     else if (content.startsWith("mafia.resetvotes") || content.startsWith("mafia.rv")) {
-        if(msg.member.displayName == game.mod.name || msg.author.username == 'Bullish') {
+        if(msg.author.username == game.mod.username || msg.author.username == 'Bullish') {
             Mafia.resetvotes(msg);
         }
         else {
@@ -82,7 +82,7 @@ client.on('message', msg => { try {
     }
     //reset all values
     else if (content.startsWith("mafia.reset")) {
-        if(msg.member.displayName == game.mod.name || msg.author.username == 'Bullish') {
+        if(msg.author.username == game.mod.username || msg.author.username == 'Bullish') {
             Mafia.reset(msg);
         }
         else {
@@ -91,7 +91,7 @@ client.on('message', msg => { try {
     }
     //revive all players
     else if (content.startsWith("mafia.revive")) {
-        if(msg.member.displayName == game.mod.name || msg.author.username == 'Bullish') {
+        if(msg.author.username == game.mod.username || msg.author.username == 'Bullish') {
             Mafia.revive(msg);
         }
         else {
