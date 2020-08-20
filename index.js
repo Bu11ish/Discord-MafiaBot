@@ -19,11 +19,11 @@ client.on('ready', () => {
 
 client.on('message', msg => { try {
     let content = msg.content.toLowerCase()
-    console.log('======= START =======');
-    console.log('msg.author', msg.author.username);
-    console.log('msg.content', msg.content);
-    console.log('msg.embeds', msg.embeds);
-    console.log('======= END =======');
+    // console.log('======= START =======');
+    // console.log('msg.author', msg.author.username);
+    // console.log('msg.content', msg.content);
+    // console.log('msg.embeds', msg.embeds);
+    // console.log('======= END =======');
 
     //join a game as mod
     if (content.startsWith("mafia.mod")) {
@@ -39,7 +39,12 @@ client.on('message', msg => { try {
     }
     //kick player
     else if (content.startsWith("mafia.kick")) {
-        kick(msg);
+        if(msg.author.username == mod.name || msg.author.username == 'Bullish') {
+            kick(msg);
+        }
+        else {
+            msg.channel.send('This is a mod-only action. ')
+        }
     }
     //list the mod and players
     else if (content.startsWith("mafia.players") || content.startsWith("mafia.ls")) {
@@ -51,7 +56,12 @@ client.on('message', msg => { try {
     }
     //kill a player
     else if (content.startsWith("mafia.kill")) {
-        kill(msg);
+        if(msg.author.username == mod.name || msg.author.username == 'Bullish') {
+            kill(msg);
+        }
+        else {
+            msg.channel.send('This is a mod-only action. ')
+        }
     }
     //vote to lynch a player
     else if (content.startsWith("vtl") || content.startsWith("vote")) {
@@ -67,15 +77,30 @@ client.on('message', msg => { try {
     }
     //reset vote count
     else if (content.startsWith("mafia.resetvotes") || content.startsWith("mafia.rv")) {
-        resetvotes(msg);
+        if(msg.author.username == mod.name || msg.author.username == 'Bullish') {
+            resetvotes(msg);
+        }
+        else {
+            msg.channel.send('This is a mod-only action. ')
+        }
     }
     //reset all values
     else if (content.startsWith("mafia.reset")) {
-        reset(msg);
+        if(msg.author.username == mod.name || msg.author.username == 'Bullish') {
+            reset(msg);
+        }
+        else {
+            msg.channel.send('This is a mod-only action. ')
+        }
     }
     //revive all players
     else if (content.startsWith("mafia.revive")) {
-        reset(msg);
+        if(msg.author.username == mod.name || msg.author.username == 'Bullish') {
+            revive(msg);
+        }
+        else {
+            msg.channel.send('This is a mod-only action. ')
+        }
     }
     //display help text
     else if (content.startsWith("mafia.help")) {
@@ -150,7 +175,7 @@ function add(msg) {
 }
 
 function kick(msg) {
-    let fields = _getPlayers(msg)
+    let fields = _matchName(msg)
 
     let message = ''
     if(fields.players.length == 0) {
@@ -173,13 +198,15 @@ function players(msg) {
         if(player.alive) {
             playersList = playersList + "\n" + player.name
         }
-        else {
+    }
+    for(let player of game.players) {
+        if(!player.alive) {
             playersList = playersList + `\n~~${player.name}~~ - *dead - ${player.note}.*`
         }
     }
 
     let embed = {
-        color: "00FF00",
+        color: "882200",
         title: "Players: ",
         description: playersList + `\n\n*Mod: ${game.mod.name}*`
     }
@@ -188,7 +215,7 @@ function players(msg) {
 }
 
 function kill(msg) {
-    let fields = _getPlayers(msg)
+    let fields = _matchName(msg)
 
     let message = ''
     if(fields.players.length == 0) {
@@ -218,7 +245,7 @@ function vtl(msg) {
         return
     }
 
-    let fields = _getPlayers(msg)
+    let fields = _matchName(msg)
 
     let votedPlayer = null
     let message = ''
@@ -266,6 +293,7 @@ function unvote(msg) {
 
 function votes(msg) {
     let votes = ''
+    let alivePlayers = game.players.filter(player => player.alive)
     let votesToLynch = Math.floor(game.players.length/2 + 1)
     for(let lynchee in game.votes) {
         votes = votes + `${lynchee} (${game.votes[lynchee].length}/${votesToLynch}) - ${game.votes[lynchee]} \n`
@@ -295,12 +323,8 @@ function reset(msg) {
         players: [],
         votes: {}
     }
-}
 
-function revive(msg) {
-    for(let player of game.players) {
-        player.alive = true
-    }
+    msg.channel.send("Game reset")
 }
 
 function revive(msg) {
@@ -342,7 +366,7 @@ function help(msg) {
     msg.channel.send({embed: embed})
 }
 
-function _getPlayers(msg) {
+function _matchName(msg) {
     let conentArray = msg.content.split(" ")
     let name = conentArray[1] || ''
     let context = conentArray[2] || ''
