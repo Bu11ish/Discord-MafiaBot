@@ -5,7 +5,13 @@ module.exports = {
             username: null,
             displayName: null
         },
-        players: [],
-        votes: {}
+        players: []
     }
+}
+
+player = {
+    name: null,
+    alive: true,
+    note: '',
+    vtl: null
 }

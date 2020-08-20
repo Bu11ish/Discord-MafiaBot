@@ -60,7 +60,7 @@ client.on('message', msg => { try {
         }
     }
     //vote to lynch a player
-    else if (content.startsWith("vtl") || content.startsWith("vte") || content.startsWith("vote")) {
+    else if (content.startsWith("vtl ") || content.startsWith("vte ") || content.startsWith("vote ")) {
         Mafia.vtl(msg);
     }
     //unvote

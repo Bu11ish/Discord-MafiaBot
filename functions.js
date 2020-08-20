@@ -41,7 +41,8 @@ function join(msg) {
     game.players.push({
         name: msg.member.displayName,
         alive: true,
-        note: ''
+        note: '',
+        vtl: null
     })
 
     let embed = {
@@ -72,7 +73,8 @@ function add(msg) {
     game.players.push({
         name: name,
         alive: true,
-        note: ''
+        note: '',
+        vtl: null
     })
 
     let embed = {
@@ -133,6 +135,7 @@ function kill(msg) {
     else if(fields.players.length == 1) {
         fields.players[0].alive = false
         fields.players[0].note = fields.context
+        fields.players[0].vtl = null
         message = `Killed player: **${fields.players[0].name}** - ${fields.players[0].note}`
     }
     else {
@@ -143,36 +146,36 @@ function kill(msg) {
 }
 
 function vtl(msg) {
-    let voterIsInGame = false
+    let voter = null
     for(let player of game.players) {
         if(msg.member.displayName == player.name) {
-            voterIsInGame = true
+            voter = player
         }
     }
-    if(!voterIsInGame) {
+    if(!voter) {
         msg.channel.send("gtfo " + msg.member.displayName + " ur not in the game. ")
         return
     }
 
     let fields = _matchName(msg)
+    if(fields.context != null && fields.context != '') {
+        return
+    }
 
-    let votedPlayer = null
     let message = ''
     if(fields.players.length == 0) {
         message = "No players with identifier found. "
     }
     else if(fields.players.length == 1) {
-        votedPlayer = fields.players[0]
+        let votedPlayer = fields.players[0]
         if(!(votedPlayer.alive)) {
             msg.channel.send('This player is already dead!')
             return
         }
-        unvote(msg)
-        if(!(votedPlayer.name in game.votes)) {
-            game.votes[votedPlayer.name] = []
-        }
-        game.votes[votedPlayer.name].push(msg.member.displayName)
-        message = `**${msg.member.displayName}** voted **${votedPlayer.name}**`
+
+        voter.vtl = votedPlayer.name
+
+        message = `**${voter.name}** voted **${votedPlayer.name}**`
         msg.channel.send(message)
         votes(msg)
         return
@@ -185,43 +188,57 @@ function vtl(msg) {
 }
 
 function unvote(msg) {
-    let unvoted = false
-    for(let lynchee in game.votes) {
-        for(let vote in game.votes[lynchee]) {
-            if(msg.member.displayName == game.votes[lynchee][vote]) {
-                game.votes[lynchee].splice(vote, 1)
-                unvoted = true
+    for(let player of game.players) {
+        if(msg.member.displayName == player.name) {
+            if(player.vtl == null) {
+                return
+            }
+            else {
+                player.vtl = null
+                msg.channel.send(`**${msg.member.displayName}** unvoted`)
+                return
             }
         }
-    }
-
-    if(unvoted) {
-        msg.channel.send(`**${msg.member.displayName}** unvoted`)
     }
 }
 
 function votes(msg) {
-    let votes = ''
-    let alivePlayers = game.players.filter(player => player.alive)
+    let votes = {}
+    let votesStr = ''
     let votesToLynch = Math.floor(game.players.length/2 + 1)
-    for(let lynchee in game.votes) {
-        votes = votes + `${lynchee} (${game.votes[lynchee].length}/${votesToLynch}) - ${game.votes[lynchee]} \n`
-        if(game.votes[lynchee].length >= votesToLynch){
-            votes = "**" + votes + "**"
+    for(let player of game.players) {
+        if(player.vtl != null) {
+            if(votes[player.vtl]) {
+                votes[player.vtl].push(player.name)
+            }
+            else {
+                votes[player.vtl] = [player.name]
+            }
+        }
+    }
+
+    for(let lynchee in votes) {
+        if(votes[lynchee].length < votesToLynch) {
+            votesStr = votesStr + `${lynchee} (${votes[lynchee].length}/${votesToLynch}) - ${votes[lynchee]} \n`
+        }
+        else {
+            votesStr = "**" + votesStr + `${lynchee} (${votes[lynchee].length}/${votesToLynch}) - ${votes[lynchee]}** \n`
         }
     }
 
     let embed = {
         color: "22AAFF",
         title: "Vote count: ",
-        description: votes
+        description: votesStr
     }
 
     msg.channel.send({embed: embed})
 }
 
 function resetvotes(msg) {
-    game.votes = {}
+    for(let player of game.players) {
+        player.vtl = null
+    }
 
     msg.channel.send("Votes reset")
 }
@@ -232,8 +249,7 @@ function reset(msg) {
         mod: {
             name: null
         },
-        players: [],
-        votes: {}
+        players: []
     }
 
     msg.channel.send("Game reset")
