@@ -17,7 +17,7 @@ client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
 
-client.on('message', msg => {
+client.on('message', msg => { try {
     let content = msg.content.toLowerCase()
     console.log('======= START =======');
     console.log('msg.author', msg.author.username);
@@ -81,6 +81,8 @@ client.on('message', msg => {
     else if (content.startsWith("mafia.help")) {
         help(msg);
     }
+}
+catch(err) {}
 });
 
 function mod(msg) {
@@ -119,6 +121,12 @@ function join(msg) {
 function add(msg) {
     let conentArray = msg.content.split(" ")
     let name = conentArray[1]
+
+    if(name == '' || name == null) {
+        msg.channel.send("Cannot add blank name. ")
+        return
+    }
+
     for(let player of game.players) {
         if(name == player.name) {
             player.alive = true
@@ -134,7 +142,7 @@ function add(msg) {
     })
 
     let embed = {
-        color: "00FF00",
+        color: "22AA22",
         title: "Player has joined: " + name
     }
 
@@ -306,7 +314,7 @@ function revive(msg) {
 
 function help(msg) {
     helpText = `
-        Welcome to MafiaBot by Bullish.
+        *Welcome to MafiaBot by Bullish.*
 
         **Commands: **
 
