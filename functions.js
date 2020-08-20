@@ -25,6 +25,7 @@ module.exports = {
 function mod(msg) {
     game.mod.username = msg.author.username
     game.mod.displayName = msg.member.displayName
+    game.title = msg.content.substring(msg.content.indexOf(" "))
 
     let embed = {
         color: "FF00FF",
@@ -135,23 +136,25 @@ function start(msg) {
     time = parseInt(time) * 60 // time in seconds
 
     clearTimeout(game.timer)
-    game.timer = setTimeout(end, (time-10)*1000)
+    game.timer = setTimeout(end, (time-35)*1000)
     function end() {
-        var timeleft = 10
-        var gameCountdown = setInterval(countdown, 2000)
+        var timeleft = 30
+        msg.channel.send(timeleft + "s remaining")
+        var gameCountdown = setInterval(countdown, 5000)
         function countdown() {
             if(game.timer == null) {
                 clearInterval(gameCountdown)
                 return;
             }
-            msg.channel.send(timeleft + "s remaining")
-            timeleft = timeleft - 2
-            if(timeleft < 0) {
-                msg.channel.send("**Phases ended.**")
+            timeleft = timeleft - 5
+            if(timeleft <= 0) {
+                msg.channel.send("0s: **Phase ended.**")
                 clearInterval(gameCountdown)
                 clearTimeout(game.timer)
                 game.timer = null
+                return;
             }
+            msg.channel.send(timeleft + "s remaining")
         }
     }
 
@@ -190,13 +193,18 @@ function _getTimeLeft() {
 
 function status(msg) {
     let status = ''
-    status = status + "Phase in progress: " + (game.timer != null) + "\n"
+    if(game.mod.displayName != null) {
+        status = status + "Game: " + game.title + "\n"
+        status = status + "Mod: " + game.mod.displayName + "\n"
+    }
+    status = status + "Game in progress: " + (game.timer != null) + "\n"
     if(game.timer != null) {
         status = status + "Time remaining: " + _getTimeLeft() + "\n"
     }
-    status = status + "Mod: " + game.mod.displayName + "\n"
-    status = status + "Player count: " + game.players.length + "\n"
-    status = status + "Living player count: " + game.players.filter(player => player.alive).length + "\n"
+    if(game.players.length > 0) {
+        status = status + "Player count: " + game.players.length + "\n"
+        status = status + "Living player count: " + game.players.filter(player => player.alive).length + "\n"
+    }
 
     let embed = {
         color: "FFFF00",
@@ -327,11 +335,13 @@ function resetvotes(msg) {
 
 function reset(msg) {
     game = {
-        status: '',
+        title: '',
         mod: {
-            name: null
+            username: null,
+            displayName: null
         },
-        players: []
+        players: [],
+        timer: null
     }
 
     msg.channel.send("Game reset")

@@ -1,6 +1,6 @@
 module.exports = {
     game: {
-        status: '',
+        title: '',
         mod: {
             username: null,
             displayName: null
