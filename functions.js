@@ -205,6 +205,9 @@ function votes(msg) {
     let votesToLynch = Math.floor(game.players.length/2 + 1)
     for(let lynchee in game.votes) {
         votes = votes + `${lynchee} (${game.votes[lynchee].length}/${votesToLynch}) - ${game.votes[lynchee]} \n`
+        if(game.votes[lynchee].length >= votesToLynch){
+            votes = "**" + votes + "**"
+        }
     }
 
     let embed = {
@@ -255,7 +258,7 @@ function help(msg) {
         \`mafia.add [playerName]\` = add a player; [playerName] must be exact.
         \`mafia.kick [playerName]\` = add a player; [playerName] pattern matches.
         \`mafia.players\` = list all players.
-        \`mafia.kill [playerName]\` = kills a player; [playerName] pattern matches.
+        \`mafia.kill [playerName] [deathMessage]\` = kills a player; [playerName] pattern matches; [deathMessage] displays affter the player name.
         \`vtl [playerName]\` = votes to lynch a player; [playerName] pattern matches.
         \`unvote\` = unvotes.
         \`votes\` = lists the current vote count.
