@@ -375,18 +375,18 @@ function help(msg) {
 
         \`mafia.mod [gameTitle]\` = make yourself mod, with [gameTitle] as the game's title.
         \`mafia.join\` = join the game.
-        \`mafia.add [playerName]\` = add a player; [playerName] must be exact.
-        \`mafia.kick [playerName]\` = add a player; [playerName] pattern matches.
-        \`mafia.players\` = list all players.
+        \`mafia.add [playerName]\` = add a player; [playerName] must be exact. Revives the player if they're already in the game.
+        \`mafia.kick [playerName]\` = kick a player; [playerName] pattern matches.
+        \`mafia.players\` = list all players. *(alias mafia.ls)*
         \`mafia.start [time]\` = starts a phase with [time] minutes on the clock.
         \`mafia.stop\` = stops the phase.
-        \`timecheck\` = shows time left.
+        \`timecheck\` = shows time left in the phase.
         \`mafia.status\` = shows some stats about the current game.
         \`mafia.kill [playerName] [deathMessage]\` = kills a player; [playerName] pattern matches; [deathMessage] displays affter the player name.
-        \`vtl [playerName]\` = votes to lynch a player; [playerName] pattern matches.
+        \`vtl [playerName]\` = votes to lynch a player; [playerName] pattern matches. *(alias vte, vote)*
         \`unvote\` = unvotes.
-        \`mafia.votes\` = lists the current vote count.
-        \`mafia.resetvotes\` = resets the vote count to 0.
+        \`mafia.votes\` = lists the current vote count. *(alias mafia.vc)*
+        \`mafia.resetvotes\` = resets the vote count to 0. *(alias mafia.rv)*
         \`mafia.reset\` = reset all game variables.
         \`mafia.revive\` = revive all players.
         \`mafia.help\` = opens this help menu.
