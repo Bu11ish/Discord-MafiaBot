@@ -10,6 +10,7 @@ client.login(auth.token);
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
+    client.user.setActivity('mafia.help', { type: 'WATCHING' })
 });
 
 client.on('message', msg => { try {

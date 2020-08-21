@@ -25,7 +25,13 @@ module.exports = {
 function mod(msg) {
     game.mod.username = msg.author.username
     game.mod.displayName = msg.member.displayName
-    game.title = msg.content.substring(msg.content.indexOf(" "))
+    let indexOfSpace = msg.content.indexOf(" ")
+    if(indexOfSpace >=0 ) {
+        game.title = msg.content.substring(msg.content.indexOf(" "))
+    }
+    else {
+        game.title = "Mafia"
+    }
 
     let embed = {
         color: "FF00FF",
