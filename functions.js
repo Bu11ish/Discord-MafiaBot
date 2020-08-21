@@ -127,10 +127,15 @@ function players(msg) {
         }
     }
 
+    let title = "Players"
+    if(game.title != '' && game.title != null) {
+        title = title + " of " + game.title
+    }
+
     let embed = {
         color: "AA2200",
-        title: "Players: ",
-        description: playersList + `\n\n*Mod: ${game.mod.displayName}*`
+        title: title + ": ",
+        description: playersList
     }
 
     msg.channel.send({embed: embed})
@@ -368,7 +373,7 @@ function help(msg) {
 
         **Commands: **
 
-        \`mafia.mod\` = make yourself mod.
+        \`mafia.mod [gameTitle]\` = make yourself mod, with [gameTitle] as the game's title.
         \`mafia.join\` = join the game.
         \`mafia.add [playerName]\` = add a player; [playerName] must be exact.
         \`mafia.kick [playerName]\` = add a player; [playerName] pattern matches.
