@@ -2,6 +2,7 @@ var gameData = require('./gameData.js');
 
 var game = gameData.game
 var channelGame = gameData.channelGame
+var countdownTime = 30
 
 module.exports = {
     mod: mod,
@@ -148,7 +149,7 @@ function start(msg) {
     time = parseInt(time) * 60 // time in seconds
 
     clearTimeout(channelGame[msg.channel.id].timer)
-    channelGame[msg.channel.id].timer = setTimeout(end, (time-35)*1000)
+    channelGame[msg.channel.id].timer = setTimeout(end, (time-countdownTime)*1000)
     function end() {
         if(channelGame[msg.channel.id].timer == null) {
             return;
@@ -185,7 +186,7 @@ function stop(msg) {
 }
 
 function timecheck(msg) {
-    let timeLeft = _getTimeLeft()
+    let timeLeft = _getTimeLeft(msg)
     if(timeLeft == null) {
         msg.channel.send("No phase in progress. ")
     }
@@ -194,11 +195,12 @@ function timecheck(msg) {
     }
 }
 
-function _getTimeLeft() {
-    if(channelGame[msg.channel.id].timer == null) {
+function _getTimeLeft(msg) {
+    let timer = channelGame[msg.channel.id].timer
+    if(timer == null) {
         return null
     }
-    let totalSeconds = Math.ceil((channelGame[msg.channel.id].timer._idleStart + channelGame[msg.channel.id].timer._idleTimeout - process.uptime()*1000) / 1000) + 10;
+    let totalSeconds = Math.ceil((timer._idleStart + timer._idleTimeout - process.uptime()*1000) / 1000) + countdownTime;
     let minutesLeft = Math.floor(totalSeconds/60)
     let secondsLeft = totalSeconds%60
     if(secondsLeft < 10) {
