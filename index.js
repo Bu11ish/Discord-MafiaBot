@@ -1,8 +1,9 @@
 var auth = require('./auth.json');
 var Mafia = require('./functions.js');
-var game = require('./game.js');
+var gameData = require('./gameData.js');
 
-var game = game.game
+var game = gameData.game
+var channelGame = gameData.channelGame
 
 const Discord = require('discord.js');
 const client = new Discord.Client();
@@ -14,7 +15,6 @@ client.on('ready', () => {
 });
 
 client.on('message', msg => { try {
-    let content = msg.content.toLowerCase()
     // console.log('======= START =======');
     // console.log('msg', msg);
     // console.log('msg.nickname', msg.member.displayName);
@@ -22,6 +22,12 @@ client.on('message', msg => { try {
     // console.log('msg.embeds', msg.embeds);
     // console.log('======= END =======');
 
+    //add channel to channelGame
+    if(!(msg.channel.id in channelGame)) {
+        channelGame[msg.channel.id] = JSON.parse(JSON.stringify(game))
+    }
+
+    let content = msg.content.toLowerCase()
     //join a game as mod
     if (content.startsWith("mafia.mod")) {
         Mafia.mod(msg)

@@ -7,7 +7,8 @@ module.exports = {
         },
         players: [],
         timer: null
-    }
+    },
+    channelGame: {}
 }
 
 player = {
