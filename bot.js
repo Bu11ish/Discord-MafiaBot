@@ -20,11 +20,13 @@ client.on('message', msg => { try {
     // console.log('msg.embeds', msg.embeds);
     // console.log('======= END =======');
 
+    // disable bot on certain channels
+    // if(msg.channel.id == '713559089644437506') {
+    //     console.log("disabled on this server")
+    //     return
+    // }
+
     //add channel to channelGame
-    if(msg.channel.id == '713559089644437506') {
-        console.log("disabled on this server")
-        return
-    }
     if(!(msg.channel.id in channels)) {
         channels[msg.channel.id] = new Mafia(msg)
     }

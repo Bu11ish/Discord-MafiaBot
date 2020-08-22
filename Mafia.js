@@ -43,7 +43,7 @@ class Mafia {
     join = function(msg) {
         for(let player of this.playersList) {
             if(msg.member.displayName.toUpperCase() == player.name.toUpperCase()) {
-                msg.channel.send("You're already in the this. ")
+                msg.channel.send("You're already in the game. ")
                 return
             }
         }
@@ -57,7 +57,7 @@ class Mafia {
 
         let embed = {
             color: "00FF00",
-            title: "Player has joined: " + msg.member.displayName
+            title: msg.member.displayName + " has joined. "
         }
 
         msg.channel.send({embed: embed})
@@ -73,7 +73,7 @@ class Mafia {
         }
 
         for(let player of this.playersList) {
-            if(name == player.name) {
+            if(name.toUpperCase() == player.name.toUpperCase()) {
                 player.alive = true
                 msg.channel.send(name + " is already in the game and has been revived. ")
                 return
@@ -89,7 +89,7 @@ class Mafia {
 
         let embed = {
             color: "22AA22",
-            title: "Player has joined: " + name
+            title: name + " has been added. "
         }
 
         msg.channel.send({embed: embed})
@@ -266,6 +266,7 @@ class Mafia {
         }
 
         let fields = this._matchName(msg)
+        // do not register if there's more to the content than just a vote
         if(fields.context != null && fields.context != '') {
             return
         }
@@ -300,14 +301,14 @@ class Mafia {
         for(let player of this.playersList) {
             if(msg.member.displayName.toUpperCase() == player.name.toUpperCase()) {
                 voter = player
-                voter.vtl = 'vtnl'
-                this.votes(msg)
             }
         }
         if(!voter) {
             msg.channel.send(msg.member.displayName + " ur not in the game. ")
             return
         }
+        voter.vtl = 'vtnl'
+        this.votes(msg)
     }
 
     unvote = function(msg) {
@@ -396,14 +397,14 @@ class Mafia {
 
             \`mafia.mod [gameTitle]\` = make yourself mod, with [gameTitle] as the game's title.
             \`mafia.join\` = join the game.
-            \`mafia.add [playerName]\` = add a player; [playerName] must be exact. Revives the player if they're already in the this.
+            \`mafia.add [playerName]\` = add a player; [playerName] must be exact. Revives the player if they're already in the game.
             \`mafia.kick [playerName]\` = kick a player; [playerName] pattern matches.
             \`mafia.players\` = list all players. *(alias mafia.ls)*
             \`mafia.start [time]\` = starts a phase with [time] minutes on the clock.
             \`mafia.stop\` = stops the phase.
             \`timecheck\` = shows time left in the phase.
-            \`mafia.status\` = shows some stats about the current this.
-            \`mafia.kill [playerName] [deathMessage]\` = kills a player; [playerName] pattern matches; [deathMessage] displays affter the player name.
+            \`mafia.status\` = shows some stats about the current game.
+            \`mafia.kill [playerName] [deathMessage]\` = kills a player; [playerName] pattern matches; [deathMessage] displays after the player name.
             \`vtl [playerName]\` = votes to lynch a player; [playerName] pattern matches. *(alias vte, vote)*
             \`unvote\` = unvotes.
             \`mafia.votes\` = lists the current vote count. *(alias mafia.vc)*
@@ -423,16 +424,17 @@ class Mafia {
     }
 
     _matchName = function(msg) {
-        let conentArray = msg.content.split(" ")
-        let name = conentArray[1] || ''
-        let context = ''
-        for (let i = 2; i < conentArray.length; i++) {
-            context = context + conentArray[i] + ' '
-        }
+        let contentArray = msg.content.split(" ")
+        let name = contentArray[1] || ''
+        let context = contentArray.slice(2).join(" ")
         let selectedPlayers = []
 
         if(name != '' && name != null) {
             for(let player of this.playersList) {
+                if(player.name.toUpperCase() == name.toUpperCase()) {
+                    // if there is an exact match, return the first instance
+                    selectedPlayers = [player]
+                }
                 if(player.name.toUpperCase().includes(name.toUpperCase())) {
                     selectedPlayers.push(player)
                 }
