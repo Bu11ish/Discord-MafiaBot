@@ -21,6 +21,10 @@ client.on('message', msg => { try {
     // console.log('======= END =======');
 
     //add channel to channelGame
+    if(msg.channel.id == '713559089644437506') {
+        console.log("disabled on this server")
+        return
+    }
     if(!(msg.channel.id in channels)) {
         channels[msg.channel.id] = new Mafia(msg)
     }
@@ -90,6 +94,10 @@ client.on('message', msg => { try {
     //vote to lynch a player
     else if (content.startsWith("vtl ") || content.startsWith("vte ") || content.startsWith("vote ")) {
         game.vtl(msg);
+    }
+    //vote to lynch a player
+    else if (content.startsWith("vtnl") || content.startsWith("vtne")) {
+        game.vtnl(msg);
     }
     //unvote
     else if (content.startsWith("unvote")) {

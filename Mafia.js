@@ -2,7 +2,7 @@ class Mafia {
 
     channel = '|';
     title = '';
-    mod = {
+    gameMod = {
         username: null,
         displayName: null
     };
@@ -22,8 +22,8 @@ class Mafia {
     }
 
     mod = function(msg) {
-        this.mod.username = msg.author.username
-        this.mod.displayName = msg.member.displayName
+        this.gameMod.username = msg.author.username
+        this.gameMod.displayName = msg.member.displayName
         let indexOfSpace = msg.content.indexOf(" ")
         if(indexOfSpace >=0 ) {
             this.title = msg.content.substring(msg.content.indexOf(" "))
@@ -34,7 +34,7 @@ class Mafia {
 
         let embed = {
             color: "FF00FF",
-            title: "The mod is: " + this.mod.displayName
+            title: "The mod is: " + this.gameMod.displayName
         }
 
         msg.channel.send({embed: embed})
@@ -42,7 +42,7 @@ class Mafia {
 
     join = function(msg) {
         for(let player of this.playersList) {
-            if(msg.member.displayName == player.name) {
+            if(msg.member.displayName.toUpperCase() == player.name.toUpperCase()) {
                 msg.channel.send("You're already in the this. ")
                 return
             }
@@ -107,7 +107,8 @@ class Mafia {
             message = `Removed player: **${fields.players[0].name}**`
         }
         else {
-            message = "Multiple players with identifier found, please be more specific. "
+            this.playersList.splice(this.playersList.indexOf(fields.players[0]), 1)
+            message = `Removed player: **${fields.players[0].name}**`
         }
 
         msg.channel.send(message)
@@ -210,9 +211,9 @@ class Mafia {
 
     status = function(msg) {
         let status = ''
-        if(this.mod.displayName != null) {
+        if(this.gameMod.displayName != null) {
             status = status + "Game: " + this.title + "\n"
-            status = status + "Mod: " + this.mod.displayName + "\n"
+            status = status + "Mod: " + this.gameMod.displayName + "\n"
         }
         status = status + "Game in progress: " + (this.timer != null) + "\n"
         if(this.timer != null) {
@@ -255,12 +256,12 @@ class Mafia {
     vtl = function(msg) {
         let voter = null
         for(let player of this.playersList) {
-            if(msg.member.displayName == player.name) {
+            if(msg.member.displayName.toUpperCase() == player.name.toUpperCase()) {
                 voter = player
             }
         }
         if(!voter) {
-            msg.channel.send("gtfo " + msg.member.displayName + " ur not in the this. ")
+            msg.channel.send(msg.member.displayName + " ur not in the game. ")
             return
         }
 
@@ -294,9 +295,24 @@ class Mafia {
         msg.channel.send(message)
     }
 
+    vtnl = function(msg) {
+        let voter = null
+        for(let player of this.playersList) {
+            if(msg.member.displayName.toUpperCase() == player.name.toUpperCase()) {
+                voter = player
+                voter.vtl = 'vtnl'
+                this.votes(msg)
+            }
+        }
+        if(!voter) {
+            msg.channel.send(msg.member.displayName + " ur not in the game. ")
+            return
+        }
+    }
+
     unvote = function(msg) {
         for(let player of this.playersList) {
-            if(msg.member.displayName == player.name) {
+            if(msg.member.displayName.toUpperCase() == player.name.toUpperCase()) {
                 if(player.vtl == null) {
                     return
                 }
@@ -312,7 +328,7 @@ class Mafia {
     votes = function(msg) {
         let votes = {}
         let votesStr = ''
-        let votesToLynch = Math.floor(this.playersList.length/2 + 1)
+        let votesToLynch = Math.floor(this.playersList.filter(player => player.alive).length/2 + 1)
         for(let player of this.playersList) {
             if(player.vtl != null) {
                 if(votes[player.vtl]) {
@@ -353,7 +369,7 @@ class Mafia {
     reset = function(msg) {
         this.stop(msg)
         this.title = '';
-        this.mod = {
+        this.gameMod = {
             username: null,
             displayName: null
         };
@@ -373,7 +389,7 @@ class Mafia {
     }
 
     help = function(msg) {
-        helpText = `
+        let helpText = `
             *Welcome to MafiaBot by Bullish.*
 
             **Commands: **
@@ -409,7 +425,10 @@ class Mafia {
     _matchName = function(msg) {
         let conentArray = msg.content.split(" ")
         let name = conentArray[1] || ''
-        let context = conentArray[2] || ''
+        let context = ''
+        for (let i = 2; i < conentArray.length; i++) {
+            context = context + conentArray[i] + ' '
+        }
         let selectedPlayers = []
 
         if(name != '' && name != null) {
