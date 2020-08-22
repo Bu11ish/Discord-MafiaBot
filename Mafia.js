@@ -1,5 +1,6 @@
 class Mafia {
 
+    enabled = true
     channel = '|';
     title = '';
     gameMod = {
@@ -107,8 +108,7 @@ class Mafia {
             message = `Removed player: **${fields.players[0].name}**`
         }
         else {
-            this.playersList.splice(this.playersList.indexOf(fields.players[0]), 1)
-            message = `Removed player: **${fields.players[0].name}**`
+            message = "Multiple players with identifier found, please be more specific. "
         }
 
         msg.channel.send(message)
@@ -434,8 +434,9 @@ class Mafia {
                 if(player.name.toUpperCase() == name.toUpperCase()) {
                     // if there is an exact match, return the first instance
                     selectedPlayers = [player]
+                    break;
                 }
-                if(player.name.toUpperCase().includes(name.toUpperCase())) {
+                else if(player.name.toUpperCase().includes(name.toUpperCase())) {
                     selectedPlayers.push(player)
                 }
             }

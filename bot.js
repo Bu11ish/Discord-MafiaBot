@@ -21,7 +21,7 @@ client.on('message', msg => { try {
     // console.log('======= END =======');
 
     // disable bot on certain channels
-    // if(msg.channel.id == '713559089644437506') {
+    // if(msg.channel.id in ['713559089644437506']) {
     //     console.log("disabled on this server")
     //     return
     // }
@@ -31,8 +31,22 @@ client.on('message', msg => { try {
         channels[msg.channel.id] = new Mafia(msg)
     }
     let game = channels[msg.channel.id]
-
     let content = msg.content.toLowerCase()
+    //check if bot is enabled, only listen for "mafia.enable"
+    if(!game.enabled && content != "mafia.enable") {
+        return
+    }
+
+    //enable the bot
+    if (content.startsWith("mafia.enable")) {
+        game.enabled = true
+        msg.channel.send('Bot enabled')
+    }
+    //disable the bot
+    if (content.startsWith("mafia.disable")) {
+        game.enabled = false
+        msg.channel.send('Bot disabled')
+    }
     //join a game as mod
     if (content.startsWith("mafia.mod")) {
         game.mod(msg)
