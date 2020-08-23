@@ -27,7 +27,7 @@ class Mafia {
         this.gameMod.displayName = msg.member.displayName
         let indexOfSpace = msg.content.indexOf(" ")
         if(indexOfSpace >=0 ) {
-            this.title = msg.content.substring(msg.content.indexOf(" "))
+            this.title = msg.content.substring(msg.content.indexOf(" ")+1)
         }
         else {
             this.title = "Mafia"
@@ -127,6 +127,9 @@ class Mafia {
             }
         }
 
+        if(playersList == '') {
+            playersList = '*None*'
+        }
         let title = "Players"
         if(this.title != '' && this.title != null) {
             title = title + " of " + this.title
@@ -350,6 +353,10 @@ class Mafia {
             }
         }
 
+        if(votesStr == '') {
+            votesStr = '*None*'
+        }
+
         let embed = {
             color: "22AAFF",
             title: "Vote count: ",
@@ -392,6 +399,8 @@ class Mafia {
     help = function(msg) {
         let helpText = `
             *Welcome to MafiaBot by Bullish.*
+            This bot's purpose is to help a mafia mod keep track of the players, who's playing, who's alive, the vote count, and the timer.
+            Type \`mafia.disable\` to disable the bot on this channel; \`mafia.enable\` to re-enable.
 
             **Commands: **
 
@@ -407,7 +416,7 @@ class Mafia {
             \`mafia.kill [playerName] [deathMessage]\` = kills a player; [playerName] pattern matches; [deathMessage] displays after the player name.
             \`vtl [playerName]\` = votes to lynch a player; [playerName] pattern matches. *(alias vte, vote)*
             \`unvote\` = unvotes.
-            \`mafia.votes\` = lists the current vote count. *(alias mafia.vc)*
+            \`votecount\` = lists the current vote count. *(alias mafia.votes)*
             \`mafia.resetvotes\` = resets the vote count to 0. *(alias mafia.rv)*
             \`mafia.reset\` = reset all game variables.
             \`mafia.revive\` = revive all players.
