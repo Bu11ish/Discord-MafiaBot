@@ -132,7 +132,7 @@ class Mafia {
         }
         let title = "Players"
         if(this.title != '' && this.title != null) {
-            title = title + " of " + this.title
+            title = title + " in " + this.title
         }
 
         let embed = {

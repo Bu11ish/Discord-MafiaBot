@@ -120,7 +120,7 @@ client.on('message', msg => { try {
         game.unvote(msg);
     }
     //display the vote count
-    else if (content.startsWith("mafia.votes") || content.startsWith("mafia.votecount") || content.startsWith("votecount") {
+    else if (content.startsWith("mafia.votes") || content.startsWith("mafia.votecount") || content.startsWith("votecount")) {
         game.votes(msg);
     }
     //reset vote count
