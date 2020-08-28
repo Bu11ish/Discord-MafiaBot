@@ -47,15 +47,20 @@ client.on('message', msg => { try {
         game.enabled = false
         msg.channel.send('Bot disabled')
     }
+
     //join a game as mod
     if (content.startsWith("mafia.mod")) {
         game.mod(msg)
     }
-    //add a player by name
+    //join the game as player
     else if (content.startsWith("mafia.join")) {
         game.join(msg);
     }
-    //join a game as player
+    //leave the game as player
+    else if (content.startsWith("mafia.leave")) {
+        game.leave(msg);
+    }
+    //manually add a player
     else if (content.startsWith("mafia.add")) {
         game.add(msg);
     }
@@ -68,11 +73,11 @@ client.on('message', msg => { try {
             msg.channel.send('This is a mod-only action. ')
         }
     }
-    //list the mod and players
+    //list the players
     else if (content.startsWith("mafia.players") || content.startsWith("mafia.ls")) {
         game.players(msg);
     }
-    //display game status
+    //start the game timer
     else if (content.startsWith("mafia.start")) {
         if(msg.author.username == game.mod.username || msg.author.username == 'Bullish') {
             game.start(msg);
@@ -81,7 +86,7 @@ client.on('message', msg => { try {
             msg.channel.send('This is a mod-only action. ')
         }
     }
-    //display game status
+    //stop the game timer
     else if (content.startsWith("mafia.stop")) {
         if(msg.author.username == game.mod.username || msg.author.username == 'Bullish') {
             game.stop(msg);
@@ -90,11 +95,11 @@ client.on('message', msg => { try {
             msg.channel.send('This is a mod-only action. ')
         }
     }
-    //display game status
+    //check time left
     else if (content.startsWith("mafia.time") || content.startsWith("timecheck")) {
         game.timecheck(msg);
     }
-    //display game status
+    //display some stats about the game
     else if (content.startsWith("mafia.status")) {
         game.status(msg);
     }
@@ -111,7 +116,7 @@ client.on('message', msg => { try {
     else if (content.startsWith("vtl ") || content.startsWith("vte ") || content.startsWith("vote ")) {
         game.vtl(msg);
     }
-    //vote to lynch a player
+    //vote to no lynch
     else if (content.startsWith("vtnl") || content.startsWith("vtne")) {
         game.vtnl(msg);
     }

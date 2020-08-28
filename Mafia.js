@@ -1,13 +1,13 @@
 class Mafia {
 
     enabled = true
-    channel = '|';
+    channel = '';
     title = '';
     gameMod = {
         username: null,
         displayName: null
     };
-    playersList = new Array();
+    playersList = [];
     timer = null;
 
     _player = {
@@ -22,7 +22,7 @@ class Mafia {
         this.channel = msg.channel.id;
     }
 
-    mod = function(msg) {
+    mod(msg) {
         this.gameMod.username = msg.author.username
         this.gameMod.displayName = msg.member.displayName
         let indexOfSpace = msg.content.indexOf(" ")
@@ -41,7 +41,7 @@ class Mafia {
         msg.channel.send({embed: embed})
     }
 
-    join = function(msg) {
+    join(msg) {
         for(let player of this.playersList) {
             if(msg.member.displayName.toUpperCase() == player.name.toUpperCase()) {
                 msg.channel.send("You're already in the game. ")
@@ -64,9 +64,19 @@ class Mafia {
         msg.channel.send({embed: embed})
     }
 
-    add = function(msg) {
-        let conentArray = msg.content.split(" ")
-        let name = conentArray[1]
+    leave(msg) {
+        for(let player of this.playersList) {
+            if(msg.member.displayName.toUpperCase() == player.name.toUpperCase()) {
+                this.playersList.splice(this.playersList.indexOf(player, 1))
+                msg.channel.send(msg.member.displayName + " left the game. ")
+                return
+            }
+        }
+    }
+
+    add(msg) {
+        let contentArray = msg.content.split(" ")
+        let name = contentArray[1]
 
         if(name == '' || name == null) {
             msg.channel.send("Cannot add blank name. ")
@@ -96,7 +106,7 @@ class Mafia {
         msg.channel.send({embed: embed})
     }
 
-    kick = function(msg) {
+    kick(msg) {
         let fields = this._matchName(msg)
 
         let message = ''
@@ -114,7 +124,7 @@ class Mafia {
         msg.channel.send(message)
     }
 
-    players = function(msg) {
+    players(msg) {
         let playersList = ''
         for(let player of this.playersList) {
             if(player.alive) {
@@ -144,9 +154,9 @@ class Mafia {
         msg.channel.send({embed: embed})
     }
 
-    start = function(msg) {
-        let conentArray = msg.content.split(" ")
-        let time = conentArray[1] || "0"
+    start(msg) {
+        let contentArray = msg.content.split(" ")
+        let time = contentArray[1] || "0"
         time = parseInt(time) * 60 // time in seconds
 
         clearTimeout(this.timer)
@@ -179,7 +189,7 @@ class Mafia {
         msg.channel.send("**Phase starting with " + time/60 + " mins.**")
     }
 
-    stop = function(msg) {
+    stop(msg) {
         if(this.timer) {
             clearTimeout(this.timer)
             this.timer = null
@@ -187,7 +197,7 @@ class Mafia {
         }
     }
 
-    timecheck = function(msg) {
+    timecheck(msg) {
         let timeLeft = this._getTimeLeft(msg)
         if(timeLeft == null) {
             msg.channel.send("No phase in progress. ")
@@ -197,7 +207,7 @@ class Mafia {
         }
     }
 
-    _getTimeLeft = function(msg) {
+    _getTimeLeft(msg) {
         let timer = this.timer
         if(timer == null) {
             return null
@@ -212,7 +222,7 @@ class Mafia {
         return "" + minutesLeft + ":" + secondsLeft
     }
 
-    status = function(msg) {
+    status(msg) {
         let status = ''
         if(this.gameMod.displayName != null) {
             status = status + "Game: " + this.title + "\n"
@@ -236,7 +246,7 @@ class Mafia {
         msg.channel.send({embed: embed})
     }
 
-    kill = function(msg) {
+    kill(msg) {
         let fields = this._matchName(msg)
 
         let message = ''
@@ -256,7 +266,7 @@ class Mafia {
         msg.channel.send(message)
     }
 
-    vtl = function(msg) {
+    vtl(msg) {
         let voter = null
         for(let player of this.playersList) {
             if(msg.member.displayName.toUpperCase() == player.name.toUpperCase()) {
@@ -299,7 +309,7 @@ class Mafia {
         msg.channel.send(message)
     }
 
-    vtnl = function(msg) {
+    vtnl(msg) {
         let voter = null
         for(let player of this.playersList) {
             if(msg.member.displayName.toUpperCase() == player.name.toUpperCase()) {
@@ -314,7 +324,7 @@ class Mafia {
         this.votes(msg)
     }
 
-    unvote = function(msg) {
+    unvote(msg) {
         for(let player of this.playersList) {
             if(msg.member.displayName.toUpperCase() == player.name.toUpperCase()) {
                 if(player.vtl == null) {
@@ -329,7 +339,7 @@ class Mafia {
         }
     }
 
-    votes = function(msg) {
+    votes(msg) {
         let votes = {}
         let votesStr = ''
         let votesToLynch = Math.floor(this.playersList.filter(player => player.alive).length/2 + 1)
@@ -349,7 +359,7 @@ class Mafia {
                 votesStr = votesStr + `${lynchee} (${votes[lynchee].length}/${votesToLynch}) - ${votes[lynchee]} \n`
             }
             else {
-                votesStr = "**" + votesStr + `${lynchee} (${votes[lynchee].length}/${votesToLynch}) - ${votes[lynchee]}** \n`
+                votesStr = "**" + votesStr + `${lynchee} (${votes[lynchee].length}/${votesToLynch}) - ${votes[lynchee].join(", ")}** \n`
             }
         }
 
@@ -366,7 +376,7 @@ class Mafia {
         msg.channel.send({embed: embed})
     }
 
-    resetvotes = function(msg) {
+    resetvotes(msg) {
         for(let player of this.playersList) {
             player.vtl = null
         }
@@ -374,7 +384,7 @@ class Mafia {
         msg.channel.send("Votes reset")
     }
 
-    reset = function(msg) {
+    reset(msg) {
         this.stop(msg)
         this.title = '';
         this.gameMod = {
@@ -387,7 +397,7 @@ class Mafia {
         msg.channel.send("**Game reset**")
     }
 
-    revive = function(msg) {
+    revive(msg) {
         for(let player of this.playersList) {
             player.alive = true
             player.note = ''
@@ -396,7 +406,7 @@ class Mafia {
         msg.channel.send("All players revived")
     }
 
-    help = function(msg) {
+    help(msg) {
         let helpText = `
             *Welcome to MafiaBot by Bullish.*
             This bot's purpose is to help a mafia mod keep track of the players, who's playing, who's alive, the vote count, and the timer.
@@ -432,7 +442,7 @@ class Mafia {
         msg.channel.send({embed: embed})
     }
 
-    _matchName = function(msg) {
+    _matchName(msg) {
         let contentArray = msg.content.split(" ")
         let name = contentArray[1] || ''
         let context = contentArray.slice(2).join(" ")
