@@ -15,7 +15,6 @@ class Player {
   priority = null
   blocked = false
   didRB = false
-  visitedBy = new Array();
   weirdLynch = null
   moreArgs = false
   message = null
@@ -44,10 +43,11 @@ class Player {
     this.visibleAff = affiliation
     this.visibleRole = role
     this.moreArgs = moreArgs
-    this.saved = role
+    this.saved = affiliation
     this.modifiers = mods
     this.visibleMods = mods
     this.origXNum = xNum
+    this.xNum = xNum
     this.abils = abils
     this.dms = dms
   }
@@ -139,14 +139,14 @@ class Mafia {
     playersList = new Array();
     timer = null;
     roleList = new Array("Doctor", "Cop", "Vanilla", "Goon", "Godfather", "Rolecop", "Roleblocker", "Miller", "PGO", "Bulletproof", "Tracker", "Ninja", "Strongman", "Vigilante", "Loved", "Hated", "Actress", "Messenger", "Bodyguard", "Jailor", "Framer", "Lawyer", "Mimic", "JOAT", "Hider", "Innocent Child", "Governor", "Jester", "Janitor", "Watcher");
-    roleDesc = new Array("You can protect someone at night from being killed.", "You can investigate someone at night and find out their affiliation.", "You particpate with your voice and vote.", "You particpate with your voice and vote.", "If you are investigated, you will turn up innocent.", "You can investigate someone at night and find out their role.", "If you visit someone at night, and they are an active role, they will not be able to perform their action.", "If you are investigated, you will turn up innocent.", "You will kill anyone who visits you at night. You cannot die except by lynching.", "You cannot die except by lynching.", "You can visit someone at night to find out who they visited.", "If you do the mafia NK, you will not appear on any watcher/tracker reports.", "If you do the mafia NK, you cannot be stopped.", "You can kill someone each night.", "It takes one extra vote to lynch you.", "It takes one fewer vote to lynch you.", "Each night you may visit another player. You will learn that player's role. You will appear to all investigative roles to have the role and alignment of the last player you visited. Upon death, you will appear to have the role and alignment of the last player you visited.", "Each night, you may send a player a message. Do action|<target>|<message>.", "Each night, you may visit someone. If they were gonna die, you will die instead.", "Each night you can visit someone. They will be roleblocked and protected.", "You can visit someone during the night. If they are investigated that night, they will show as guilty.", "You can visit someone during the night. If they are investigated that night, they will show as innocent.", "If you visit someone, you will become their role, affiliation, and character.", "You have some abilities. You will be able to perform each ability once. Do action|<target|<ability>.", "Each night if you visit someone, you will not be able to be killed. However, if the person you visit is killed, you will be killed as well.", "At any point in the game, you may choose to reveal yourself and you will be confirmed as innocent. Do action|reveal.", "During the night phase, if you use your ability, you will reverse the lynch of the previous day. You can only do this once. Do action|reverse.", "You only win if you get lynched.", "Each night you can visit someone. If that person is killed the same night, their role and PM  will not be revealed.", "Each night you can visit someone and learn everyone who visited your target.");
+    roleDesc = new Array("You can protect someone at night from being killed.", "You can investigate someone at night and find out their affiliation.", "You particpate with your voice and vote.", "You particpate with your voice and vote.", "If you are investigated, you will turn up innocent.", "You can investigate someone at night and find out their role.", "If you visit someone at night, and they are an active role, they will not be able to perform their action.", "If you are investigated, you will turn up innocent.", "You will kill anyone who visits you at night. You cannot die except by lynching.", "You cannot die except by lynching.", "You can visit someone at night to find out who they visited.", "If you do the mafia NK, you will not appear on any watcher/tracker reports.", "If you do the mafia NK, you cannot be stopped.", "You can kill someone each night.", "It takes one extra vote to lynch you.", "It takes one fewer vote to lynch you.", "Each night you may visit another player. You will learn that player's role. You will appear to all investigative roles to have the role and alignment of the last player you visited. Upon death, you will appear to have the role and alignment of the last player you visited.", "Each night, you may send a player a message. Do action|<target>|<message>.", "Each night, you may visit someone. If they were gonna die, you will die instead.", "Each night you can visit someone. They will be roleblocked and protected.", "You can visit someone during the night. If they are investigated that night, they will show as guilty.", "You can visit someone during the night. If they are investigated that night, they will show as innocent.", "If you visit someone, you will adopt their role, affiliation, and character.", "You have some abilities. You will be able to perform each ability once. Do action|<target|<ability>.", "Each night if you visit someone, you will not be able to be killed. However, if the person you visit is killed, you will be killed as well.", "At any point in the game, you may choose to reveal yourself and you will be confirmed as innocent. Do action|reveal.", "During the night phase, if you use your ability, you will reverse the lynch of the previous day. You can only do this once. Do action|reverse.", "You only win if you get lynched.", "Each night you can visit someone. If that person is killed the same night, their role and PM  will not be revealed.", "Each night you can visit someone and learn everyone who visited your target.");
     priority1 = new Array("Roleblocker", "Jailor");
     priority2 = new Array("Doctor", "Bodyguard", "Framer", "Lawyer", "Hider", "Janitor");
     priority3 = new Array("Cop", "Rolecop", "Messenger");
     priority4 = new Array("Tracker", "Watcher");
     priority5 = new Array("PGO");
     mafia = []
-    rolePRs = ["Doctor", "Cop", "Rolecop", "Roleblocker", "Tracker", "Vigilante", "Actress", "Messenger", "Bodyguard", "Jailor", "Framer", "Lawyer", "JOAT", "Hider", "Governor", "Janitor", "Watcher"]
+    rolePRs = ["Doctor", "Cop", "Rolecop", "Roleblocker", "Tracker", "Vigilante", "Actress", "Messenger", "Bodyguard", "Jailor", "Framer", "Lawyer", "JOAT", "Hider", "Governor", "Janitor", "Watcher", "Mimic"]
     canSelfTarget = ["Lawyer", "Doctor", "Watcher"]
     _countdownTime = 30;
     graveyard = []
@@ -225,21 +225,23 @@ class Mafia {
         }
         let args = msg.content.split("|")
         if(args.length != 6 && this.chars == true){
-          msg.channel.send("Incorrect formatting. Do 'mafia.add|player username>|<player role>|character>|<affiliation>|<role pm>'.")
+          msg.channel.send("Incorrect formatting. Do 'mafia.add|player username>|<player role>|character>|<affiliation>|<role pm>'. If you do not want to use characters, do mafia.chars off.")
           return
         }
         else if(args.length != 5 && this.chars == false){
-          msg.channel.send("Incorrect formatting. Do 'mafia.add|player username>|<player role>|character>|<affiliation>|<role pm>'.")
+          msg.channel.send("Incorrect formatting. Do 'mafia.add|player username>|<player role>|<affiliation>|<role pm>'. If you want to use characters, do mafia.chars on.")
           return
         }
         let name = null
         let role = null
+        let therole = null
         let affiliation = null
         let pm = null
         let character = null
         if(this.chars == true){
           name = args[1]
           role = args[2]
+          therole = args[2]
           character = args[3]
           affiliation = args[4]
           pm = args[5]
@@ -267,6 +269,7 @@ class Mafia {
               msg.channel.send(role + " is not a valid role or has not yet been added. Do mafia.roles to see all valid roles.")
               return
             }
+            therole = splitRole[0]
             var abils = splitRole[1].split(",")
             for(let abil of abils){
               if((this.possAbils.filter((str) => str.toUpperCase() == (abil.toUpperCase())).length) < 1){
@@ -281,7 +284,7 @@ class Mafia {
               msg.channel.send("Incorrect formatting. For modifiers, do <player role>&<modifiers separated by commas>.")
               return
             }
-            var sepRole = separate[0]
+            therole = separate[0]
             var sepMods = separate[1].split(",")
             for(let thing of sepMods){
               if(!(this.possMods.includes(thing.toUpperCase()))){
@@ -289,7 +292,7 @@ class Mafia {
                 for(let maybeX of sepMods){
                   let splitter = maybeX.split("")
                   if(splitter.length == 2){
-                    if(!(splitter[0].isNaN())){
+                    if(!(isNaN(splitter[0]))){
                       if(splitter[1].toUpperCase() == "X"){
                         checkX = true
                         xNum = splitter[0]
@@ -303,13 +306,15 @@ class Mafia {
                 }
               }
             }
-            if((this.roleList.filter((str) => str.toUpperCase() == (sepRole.toUpperCase())).length) < 1){
+            if((this.roleList.filter((str) => str.toUpperCase() == (therole.toUpperCase())).length) < 1){
               msg.channel.send(role + " is not a valid role or has not yet been added. Do mafia.roles to see all valid roles.")
               return
             }
           }
-          msg.channel.send(role + " is not a valid role or has not yet been added. Do mafia.roles to see all valid roles.")
-          return
+          if(!(role.includes("&")) && !(role.includes("#"))){
+            msg.channel.send(role + " is not a valid role or has not yet been added. Do mafia.roles to see all valid roles.")
+            return
+          }
         }
         var validPerson = false
         var dms = null
@@ -340,35 +345,40 @@ class Mafia {
           }
         }
         let pr = false
-        if((this.rolePRs.filter((str) => str.toUpperCase() == (role.toUpperCase())).length) > 0){
+        if((this.rolePRs.filter((str) => str.toUpperCase() == (therole.toUpperCase())).length) > 0){
           pr = true
+        }
+        if(abils.length == 1){
+          if(abils[0].toUpperCase() == "BULLETPROOF"){
+            pr = false
+          }
         }
         var priority = null
         if(affiliation.toUpperCase() == "MAFIA"){
           this.mafia.push(name)
         }
-        if((this.priority1.filter((str) => str.toUpperCase() == (role.toUpperCase())).length) >= 1){
+        if((this.priority1.filter((str) => str.toUpperCase() == (therole.toUpperCase())).length) >= 1){
           priority = 1
           this.rbnum +=1
         }
-        else if((this.priority2.filter((str) => str.toUpperCase() == (role.toUpperCase())).length) >= 1){
+        else if((this.priority2.filter((str) => str.toUpperCase() == (therole.toUpperCase())).length) >= 1){
           priority = 2
         }
-        else if((this.priority3.filter((str) => str.toUpperCase() == (role.toUpperCase())).length) >= 1){
+        else if((this.priority3.filter((str) => str.toUpperCase() == (therole.toUpperCase())).length) >= 1){
           priority = 3
         }
-        else if((this.priority4.filter((str) => str.toUpperCase() == (role.toUpperCase())).length) >= 1){
+        else if((this.priority4.filter((str) => str.toUpperCase() == (therole.toUpperCase())).length) >= 1){
           priority = 4
         }
-        else if((this.priority4.filter((str) => str.toUpperCase() == (role.toUpperCase())).length) >= 1){
+        else if((this.priority5.filter((str) => str.toUpperCase() == (therole.toUpperCase())).length) >= 1){
           priority = 5
         }
         var moreArgs = false
-        if((this.compRoles.filter((str) => str.toUpperCase() == (role.toUpperCase())).length) >= 1){
+        if((this.compRoles.filter((str) => str.toUpperCase() == (therole.toUpperCase())).length) >= 1){
           moreArgs = true
         }
-        this.playersList.push(new Player(name, role, character, pm, affiliation, pr, priority, moreArgs, sepMods, xNum, abils, dms))
-        if(pr == false || role == "JOAT"){
+        this.playersList.push(new Player(name, therole, character, pm, affiliation, pr, priority, moreArgs, sepMods, xNum, abils, dms))
+        if(pr == false || therole.toUpperCase() == "JOAT"){
           this.doPassives()
         }
         let embed = {
@@ -419,7 +429,9 @@ class Mafia {
           }
         }
       }
-      this.reset()
+      if(this.inGame == true){
+        this.reset()
+      }
       this.resetvotes()
       this.inGame = true
       let time = this.time
@@ -499,7 +511,7 @@ class Mafia {
                 playersList = playersList + "\n" + player.name
             }
             else{
-              playersList = playersList + `\n~~${player.name}~~ - *dead - ${player.note}.*`
+              playersList = playersList + `\n~~${player.name}~~ - *dead.*`
             }
         }
         let title = "Players"
@@ -733,7 +745,7 @@ class Mafia {
               }
             }
           }
-         if(vote.length >= voteUsed){
+         if(votes[vote].length >= voteUsed){
            if(vote.toUpperCase() == "VTNL"){
              try{
                this.gameCountdown.clear()
@@ -775,7 +787,7 @@ class Mafia {
                  catch(err){}
                  this.interval = false
                  if(player.role.toUpperCase() == "JESTER"){
-                   this.jesterWon == true
+                   this.jesterWon = true
                    if(this.jesterEnd == true){
                      this.checkWin()
                    }
@@ -816,26 +828,46 @@ class Mafia {
     checkWin = function(){
       if(this.jesterWon == true){
         this.channel.send("The jester won!")
+        this.end = true
       }
-      if(this.jesterEnd != true || this.jesterWon != true){
+      if(!(this.jesterEnd == true && this.jesterWon == true)){
         if(this.mafia.length < 1){
           this.channel.send("Town wins!")
+          this.end = true
         }
         if(this.mafia.length == this.townAlive){
           this.channel.send("Mafia wins!")
+          this.end = true
         }
       }
-      let thedead = ""
-      for(let dead of this.playersList){
-        thedead = thedead + `${dead.name} - ${dead.pm} \n`
+      if(this.end == true){
+        try{
+          this.gameCountdown.clear()
+        }
+        catch(err){}
+        try{
+          this.timer.clear()
+        }
+        catch(err){}
+        try{
+          this.intervalTimer.clear()
+        }
+        catch(err){}
+        this.interval = false
+        this.timer = null
+        this.intervalTimer = null
+        this.gameCountdown = null
+        let thedead = ""
+        for(let dead of this.playersList){
+          thedead = thedead + `${dead.name} - ${dead.pm} \n`
+        }
+        let embed = {
+            color: "22AAFF",
+            title: "Players:  ",
+            description: thedead
+        }
+        this.channel.send({embed: embed})
       }
-      let embed = {
-          color: "22AAFF",
-          title: "Players:  ",
-          description: thedead
-      }
-      this.channel.send({embed: embed})
-      this.end = true
     }
     vtnl = function(msg) {
         if(this.inGame == false){
@@ -916,7 +948,7 @@ class Mafia {
             description: votesStr
         }
 
-        msg.channel.send({embed: embed})
+        this.channel.send({embed: embed})
         this.tally()
     }
     resetvotes = function() {
@@ -934,7 +966,6 @@ class Mafia {
       for(let player of this.playersList){
         player.killable = true
         player.target = null
-        player.visitedBy = new Array();
         player.vtl = null
         player.blocked = false
         player.didRB = false
@@ -943,6 +974,7 @@ class Mafia {
         player.guards = new Array();
         player.visibleAff = player.saved
         player.framed = false
+        player.hider = []
       }
       this.someoneLynched = null
       this.reverseIt = false
@@ -1088,6 +1120,14 @@ class Mafia {
       }
       let target = contentArray[1]
       if(target.toUpperCase() == "WAIVE"){
+        if(nk == false){
+          user.target = "waive"
+        }
+        else{
+          this.nkinfo.target = "waive"
+        }
+        msg.channel.send("Confirmed.")
+        this.checkActions()
         return
       }
       if(target.toUpperCase() == "REVERSE"){
@@ -1105,8 +1145,13 @@ class Mafia {
         }
         this.reverseIt = true
         user.canReverse = false
+        user.target = "reverse"
         msg.channel.send("Confirmed.")
         this.checkActions()
+        return
+      }
+      if(user.role.toUpperCase() == "GOVERNOR" && target.toUpperCase() != "REVERSE"){
+        msg.channel.send("You cannot target people. Do action|reverse.")
         return
       }
       var extra = null
@@ -1129,6 +1174,8 @@ class Mafia {
       }
       if(user.name.toUpperCase() == target.toUpperCase() && user.role.toUpperCase() != "JOAT"){
         if(this.canDocSelfTarget == true && user.role.toUpperCase() == "DOCTOR"){
+        }
+        else if((this.canSelfTarget.filter((str) => str.toUpperCase() == (user.role.toUpperCase())).length) >= 1){
         }
         else{
           msg.channel.send("You cannot target yourself with this ability.")
@@ -1153,11 +1200,11 @@ class Mafia {
             }
             this.checkActions()
             return
-            }
-        }
-        else{
-          msg.channel.send("This target is not alive. Do mafia.ls to see all players.")
-          return
+          }
+          else{
+            msg.channel.send("This target is not alive. Do mafia.ls to see all players.")
+            return
+          }
         }
       }
       msg.channel.send("This is not a valid target. Do mafia.ls to see all players.")
@@ -1175,7 +1222,9 @@ class Mafia {
               return
             }
           }
-          return
+          if(!(player.modifiers.filter((str) => str.toUpperCase() == "EVEN").length >= 1) && !(player.modifiers.filter((str) => str.toUpperCase() == "ODD").length >= 1)){
+            return
+          }
         }
       }
       if(this.nkinfo.target == null){
@@ -1186,7 +1235,7 @@ class Mafia {
     }
     seeIfBeingRBd = function(player){
       for(let possRB of this.playersList){
-        if(possRB.priority = 1 && possRB.alive == true){
+        if(possRB.priority == 1 && possRB.alive == true){
           if(possRB.target.toUpperCase() == player.name.toUpperCase()){
             this.rbList.push(possRB)
             this.seeIfBeingRBd(possRB)
@@ -1196,24 +1245,24 @@ class Mafia {
     }
     manyRBs = function(){
       for(let player of this.playersList){
-        if(player.priority = 1 && player.alive == true){
+        if(player.priority == 1 && player.alive == true){
           for(let other of this.playersList){
-            if(player.name.toUpperCase() == player.target.toUpperCase()){
+            if(other.name.toUpperCase() == player.target.toUpperCase()){
               if(other.priority != 1){
                 this.rbList.push(player)
-                this.seeIfBeingRbd(player)
+                this.seeIfBeingRBd(player)
               }
             }
           }
         }
       }
       this.rbList = this.rbList.reverse()
-      for(let rber in this.rbList){
+      for(let rber of this.rbList){
         rber.didRB = true
         this.roleFuncs(rber.name, rber.role, rber.target)
       }
-      for(let player in this.playersList){
-        if(player.priority = 1 && player.didRB == false){
+      for(let player of this.playersList){
+        if(player.priority == 1 && player.didRB == false){
           this.roleFuncs(player.name, player.role, player.target)
         }
         player.didRB == false
@@ -1224,11 +1273,11 @@ class Mafia {
       //all of this first part is dealing with the possibility of multiple roleblockers
       var rbAlert = false
       var falseAlarm = true
-      if(rbnum > 0){
+      if(this.rbnum > 0){
         for(let player of this.playersList){
-          if(player.priority = 1 && player.alive == true){
+          if(player.priority == 1 && player.alive == true){
             for(let other of this.playersList){
-              if(player.name.toUpperCase() == player.target.toUpperCase()){
+              if(other.name.toUpperCase() == player.target.toUpperCase()){
                 if(other.priority == 1){
                   rbAlert = true
                 }
@@ -1260,7 +1309,7 @@ class Mafia {
           this.mafia.push(this.someoneLynched.name)
         }
         else{
-          if(player.affiliation.toUpperCase() == "TOWN"){
+          if(this.someoneLynched.affiliation.toUpperCase() == "TOWN"){
             this.townAlive +=1
           }
         }
@@ -1272,6 +1321,11 @@ class Mafia {
       }
       for(let player of this.playersList){
         if(player.role.toUpperCase() == "ACTRESS" && player.pr == true){
+          this.roleFuncs(player.name, player.role, player.target)
+        }
+      }
+      for(let player of this.playersList){
+        if(player.role.toUpperCase() == "MIMIC" && player.pr == true){
           this.roleFuncs(player.name, player.role, player.target)
         }
       }
@@ -1337,8 +1391,8 @@ class Mafia {
             }
           }
         }
+        this.begin()
       }
-      this.begin()
     }
     doPassives = function(){
       var person = this.playersList[this.playersList.length - 1]
@@ -1357,12 +1411,12 @@ class Mafia {
         person.weirdLynch = -1
       }
       if(person.role.toUpperCase() == "JOAT"){
-        if((user.abils.filter((str) => str.toUpperCase() == "BULLETPROOF").length) >= 1){
-          user.bp1 = true
-          i = 0
-          while (i < user.abils.length){
-            if(user.abils[i].toUpperCase() == "BULLETPROOF"){
-              user.abils.splice(this.mafia.indexOf(i),1)
+        if((person.abils.filter((str) => str.toUpperCase() == "BULLETPROOF").length) >= 1){
+          person.bp1 = true
+          var i = 0
+          while (i < person.abils.length){
+            if(person.abils[i].toUpperCase() == "BULLETPROOF"){
+              person.abils.splice(i,1)
             }
             i+=1
           }
@@ -1371,8 +1425,13 @@ class Mafia {
     }
     roleFuncs = function(name, role, target){
       var user = null
-      if(target.toUpperCase() == "WAIVE" || target == null){
+      if(target == null){
         if(role.toUpperCase() != "PGO"){
+          return
+        }
+      }
+      if(target != null){
+        if(target.toUpperCase() == "WAIVE"){
           return
         }
       }
@@ -1401,12 +1460,16 @@ class Mafia {
         }
       }
       if(role.toUpperCase() == "NK" || role.toUpperCase() == "NINJA" || role.toUpperCase() == "STRONGMAN"){
-        if(target.killable == false || (target.role.toUpperCase() == "BULLETPROOF" && target.origXNum != 0) || target.bp1 == true){
+        if(target.killable == false || (target.role.toUpperCase() == "BULLETPROOF" && target.xNum != 0) || target.bp1 == true){
           if(target.bp1 == true  && target.guards.length == 0){
             target.bp1 = false
           }
-          if(target.role.toUpperCase() == "BULLETPROOF" && target.origXNum != 0 && !(target.origXNum.isNaN()) && target.guards.length == 0){
-            target.origXNum -= 1
+          if(target.role.toUpperCase() == "BULLETPROOF" && target.xNum != 0 && target.guards.length == 0){
+            if(target.xNum != null){
+              if(!(isNaN(target.xNum))){
+                target.xNum -= 1
+              }
+            }
           }
           if(role.toUpperCase() != "STRONGMAN"){
             var yesStrong = false
@@ -1417,9 +1480,6 @@ class Mafia {
               }
             }
             if(yesStrong == false && role.toUpperCase() != "STRONGMAN"){
-              if(role.toUpperCase() != "NINJA"){
-                target.visitedBy.push(user.name)
-              }
               if(target.guards.length == 0){
                 return
               }
@@ -1427,9 +1487,6 @@ class Mafia {
           }
         }
         else if(target.role.toUpperCase() == "PGO"){
-          if(role.toUpperCase() != "NINJA"){
-            target.visitedBy.push(user.name)
-          }
           if(target.guards.length == 0){
             return
           }
@@ -1463,7 +1520,7 @@ class Mafia {
           this.graveyard.push(target.guards[0])
         }
         else{
-          if(target.killable == false || (target.role.toUpperCase() == "BULLETPROOF" && target.origXNum != 0 && target.guards.length == 0) || target.bp1 == true){
+          if(target.killable == false || (target.role.toUpperCase() == "BULLETPROOF" && target.xNum != 0 && target.guards.length == 0) || target.bp1 == true){
             if(yesStrong == false && role.toUpperCase() != "STRONGMAN"){
               return
             }
@@ -1519,8 +1576,8 @@ class Mafia {
             theMessage = theMessage + "even "
           }
         }
-        if(target.origXNum != null){
-          theMessage = theMessage + target.origXNum + "x "
+        if(target.xNum != null){
+          theMessage = theMessage + target.xNum + "x "
         }
         user.dms.send(theMessage + target.visibleRole + ".")
       }
@@ -1528,37 +1585,41 @@ class Mafia {
           target.blocked = true
       }
       else if(role.toUpperCase() == "PGO"){
-          for(let visitor of user.visitedBy){
-            for(let player of this.playersList){
-              if(visitor.toUpperCase() == player.name.toUpperCase()){
-                player.alive = false
-                player.vtl = null
-                if(this.mafia.indexOf(player.name) != -1){
-                  this.mafia.splice(this.mafia.indexOf(player.name),1)
-                }
-                else{
-                  if(player.affiliation.toUpperCase() == "TOWN"){
-                    this.townAlive -= 1
-                  }
-                }
-                this.graveyard.push(player)
-                return
+        for(let player of this.playersList){
+          if(player.target != null){
+            if(player.target.toUpperCase() == user.name.toUpperCase() && player.blocked != true){
+              player.alive = false
+              player.vtl = null
+              if(this.mafia.indexOf(player.name) != -1){
+                this.mafia.splice(this.mafia.indexOf(player.name),1)
               }
+              else{
+                if(player.affiliation.toUpperCase() == "TOWN"){
+                  this.townAlive -= 1
+                }
+              }
+              this.graveyard.push(player)
             }
           }
+        }
       }
       else if(role.toUpperCase() == "TRACKER"){
-        if(target.target == null || target.blocked == true){
+        if(target.target == null|| target.blocked == true || target.role.toUpperCase() == "NINJA"){
           user.dms.send(target.name + " visited no one.")
         }
-        else{
-          user.dms.send(target.name + " visited " + target.target + ".")
+        else if(target.target != null){
+          if(target.target.toUpperCase() == "WAIVE"){
+            user.dms.send(target.name + " visited no one.")
+          }
+          else{
+            user.dms.send(target.name + " visited " + target.target + ".")
+          }
         }
       }
       else if(role.toUpperCase() == "WATCHER"){
         var thevisits = []
         for(let possVisitor of this.playersList){
-          if(possVisitor.target == target.name && possVisitor.blocked == false){
+          if(possVisitor.target == target.name && possVisitor.blocked == false && possVisitor.role.toUpperCase() != "NINJA"){
             thevisits.push(possVisitor.name)
           }
         }
@@ -1571,12 +1632,16 @@ class Mafia {
         }
       }
       else if(role.toUpperCase() == "VIGILANTE"){
-        if(target.killable == false || (target.role.toUpperCase() == "BULLETPROOF" && target.origXNum != 0 && target.guards.length == 0) || target.bp1 == true){
+        if(target.killable == false || (target.role.toUpperCase() == "BULLETPROOF" && target.xNum != 0) || target.bp1 == true){
           if(target.bp1 == true  && target.guards.length == 0){
             target.bp1 = false
           }
-          if(target.role.toUpperCase() == "BULLETPROOF" && target.origXNum != 0 && !(target.origXNum.isNaN()) && target.guards.length == 0){
-            target.origXNum -= 1
+          if(target.role.toUpperCase() == "BULLETPROOF" && target.xNum != 0 && target.guards.length == 0){
+            if(target.xNum != null){
+              if(!(isNaN(target.xNum))){
+                target.xNum -= 1
+              }
+            }
           }
           var yesStrong = false
           for(let mod of user.modifiers){
@@ -1586,47 +1651,43 @@ class Mafia {
             }
           }
           if(yesStrong == false){
-            target.visitedBy.push(user.name)
             if(target.guards.length == 0){
               return
             }
           }
         }
-        if(target.role.toUpperCase() == "PGO"){
-          target.visitedBy.push(user.name)
+        else if(target.role.toUpperCase() == "PGO"){
           if(target.guards.length == 0){
             return
           }
         }
-        if(yesStrong == false){
-          if(target.guards.length >= 1){
-            if(target.guards[0].hider.length != 0){
-              for(let hiding of target.guards[0].hider){
-                hiding.alive = false
-                hiding.vtl = null
-                if(this.mafia.indexOf(hiding.name) != -1){
-                  this.mafia.splice(this.mafia.indexOf(hiding.name),1)
-                }
-                else{
-                  if(hiding.affiliation.toUpperCase() == "TOWN"){
-                    this.townAlive -= 1
-                  }
-                }
-                this.graveyard.push(hiding)
-              }
-            }
-              target.guards[0].alive = false
-              target.guards[0].vtl = null
-              if(this.mafia.indexOf(target.guards[0].name) != -1){
-                this.mafia.splice(this.mafia.indexOf(target.guards[0].name),1)
+        if(target.guards.length >= 1 && yesStrong == false){
+          if(target.guards[0].hider.length != 0){
+            for(let hiding of target.guards[0].hider){
+              hiding.alive = false
+              hiding.vtl = null
+              if(this.mafia.indexOf(hiding.name) != -1){
+                this.mafia.splice(this.mafia.indexOf(hiding.name),1)
               }
               else{
-                if(target.guards[0].affiliation.toUpperCase() == "TOWN"){
+                if(hiding.affiliation.toUpperCase() == "TOWN"){
                   this.townAlive -= 1
                 }
               }
-              this.graveyard.push(target.guards[0])
+              this.graveyard.push(hiding)
+            }
           }
+          target.guards[0].alive = false
+          target.guards[0].vtl = null
+          if(this.mafia.indexOf(target.guards[0].name) != -1){
+            this.mafia.splice(this.mafia.indexOf(target.guards[0].name),1)
+          }
+          else{
+            if(target.guards[0].affiliation.toUpperCase() == "TOWN"){
+              this.townAlive -= 1
+            }
+          }
+          this.graveyard.push(target.guards[0])
         }
         else{
           if(target.killable == false || (target.role.toUpperCase() == "BULLETPROOF" && target.origXNum != 0 && target.guards.length == 0) || target.bp1 == true){
@@ -1688,7 +1749,7 @@ class Mafia {
         user.dms.send(theMessage + target.visibleRole + ".")
       }
       else if(role.toUpperCase() == "MESSENGER"){
-        target.dms.send(user.message)
+        target.dms.send("You received the following message: " + user.message)
       }
       else if(role.toUpperCase() == "BODYGUARD"){
         target.guards.push(user)
@@ -1708,14 +1769,21 @@ class Mafia {
       }
       else if(role.toUpperCase() == "MIMIC"){
         user.role = target.role
-        user.visibleRole = target.visibleRole
+        user.visibleRole = target.role
         user.affiliation = target.affiliation
-        user.visibleAff = target.visibleAff
+        user.visibleAff = target.affiliation
         user.character = target.character
         user.origXNum = target.origXNum
         user.xNum = target.xNum
         user.modifiers = target.modifiers
         user.visibleMods = target.visibleMods
+        user.pr = target.pr
+        user.priority = target.priority
+        user.moreArgs = target.moreArgs
+        user.saved = target.affiliation
+        user.modifiers = target.modifiers
+        user.visibleMods = target.modifiers
+        user.abils = target.abils
         var theMessage = target.name + " is a "
         for(let mod of target.visibleMods){
           if(mod.toUpperCase() == "WEAK"){
@@ -1735,7 +1803,7 @@ class Mafia {
           theMessage = theMessage + target.origXNum + "x "
         }
         theMessage = theMessage + target.visibleRole + "."
-        if(chars == true){
+        if(this.chars == true){
           user.dms.send(theMessage + " Their character is " + target.character)
         }
         else{
@@ -1785,7 +1853,6 @@ class Mafia {
           break
         }
       }
-      target.visitedBy.push(user.name)
     }
     help = function(msg) {
         let contentArray = msg.content.split(' ')
@@ -1826,7 +1893,7 @@ class Mafia {
             \`mafia.resetvotes\` = resets the vote count to 0. *(alias mafia.rv)*
             \`mafia.end\` = end the game.
             \`mafia.revive\` = revive all players.
-            \`mafia.roles\` = lists all possible roles.
+            \`mafia.roles\` = lists roles. Do mafia.roles to see all roles, or mafia.roles <role> to see a specific one.
             \`mafia.modifs\` = lists all possible modifiers.
             \`mafia.settings <settingToChange> <mode>\` = Opens the settings menu. Include <settingToChange> and <mode> to change a specific setting.
             \`action|<playerName>\` = performs one's night action. <playerName> must be exact. Do 'action|waive' to waive.
@@ -1872,8 +1939,6 @@ class Mafia {
       let contentArray = msg.content.split(' ')
       if(contentArray.length == 1){
         let settingsList = `
-            *Welcome to MafiaBot by Bullish and Speedrace. (page 1)*
-            **Settings: **
             \`mafia.settings <settingToChange> <mode>\` = Opens the settings menu. Include <settingToChange> and <mode> to change a specific setting.
             \`mafia.settings tellIfBlocked <on or off>\` = Decides if players who are roleblocked are told. Default is true.
             \`mafia.settings jesterEnd <on or off>\` = Decides if the game ends if the jester wins. Default is true.
@@ -1943,6 +2008,31 @@ class Mafia {
       return
     }
     printRoles = function(msg){
+      var content = msg.content.split(" ")
+      if(content.length == 2){
+        if((this.roleList.filter((str) => str.toUpperCase() == (content[1].toUpperCase())).length) < 1){
+          msg.channel.send("This is not a valid role. Do mafia.roles to see all roles.")
+          return
+        }
+        var i = 0
+        while (i < this.roleList.length){
+          if(this.roleList[i].toUpperCase() == content[1].toUpperCase()){
+            break
+          }
+          i+=1
+        }
+        var role = `${this.roleList[i]} - ${this.roleDesc[i]}`
+        let embed = {
+            color: "888888",
+            description: role
+        }
+        msg.channel.send({embed: embed})
+        return
+      }
+      else if(content.length != 1){
+        msg.channel.send("Incorrect format. Do mafia.roles to see all roles, or mafia.roles <role> to see a specific one.")
+        return
+      }
       var str = ''
       var str2 = ''
       var i = 0
