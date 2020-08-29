@@ -37,6 +37,17 @@ client.on('message', msg => { try {
         return
     }
 
+    //auth header
+    let auth = function() {
+        if(msg.member.displayName.toUpperCase() == game.gameMod.displayName.toUpperCase() || msg.author.username == 'Bullish') {
+            return true
+        }
+        else {
+            msg.channel.send('This is a mod-only action. ')
+            return false
+        }
+    }
+
     //enable the bot
     if (content.startsWith("mafia.enable")) {
         game.enabled = true
@@ -52,6 +63,10 @@ client.on('message', msg => { try {
     if (content.startsWith("mafia.mod")) {
         game.mod(msg)
     }
+    //manually appoint a mod
+    if (content.startsWith("mafia.makemod")) {
+        game.makemod(msg)
+    }
     //join the game as player
     else if (content.startsWith("mafia.join")) {
         game.join(msg);
@@ -61,17 +76,16 @@ client.on('message', msg => { try {
         game.leave(msg);
     }
     //manually add a player
-    else if (content.startsWith("mafia.add")) {
+    else if (content.startsWith("mafia.add ")) {
         game.add(msg);
+    }
+    //manually add a list of players separeated by " "
+    else if (content.startsWith("mafia.addmany ")) {
+        game.addmany(msg);
     }
     //kick player
     else if (content.startsWith("mafia.kick")) {
-        if(msg.author.username == game.mod.username || msg.author.username == 'Bullish') {
-            game.kick(msg);
-        }
-        else {
-            msg.channel.send('This is a mod-only action. ')
-        }
+        if(auth) { game.kick(msg) }
     }
     //list the players
     else if (content.startsWith("mafia.players") || content.startsWith("mafia.ls")) {
@@ -79,21 +93,11 @@ client.on('message', msg => { try {
     }
     //start the game timer
     else if (content.startsWith("mafia.start")) {
-        if(msg.author.username == game.mod.username || msg.author.username == 'Bullish') {
-            game.start(msg);
-        }
-        else {
-            msg.channel.send('This is a mod-only action. ')
-        }
+        if(auth) { game.start(msg) }
     }
     //stop the game timer
     else if (content.startsWith("mafia.stop")) {
-        if(msg.author.username == game.mod.username || msg.author.username == 'Bullish') {
-            game.stop(msg);
-        }
-        else {
-            msg.channel.send('This is a mod-only action. ')
-        }
+        if(auth) { game.stop(msg) }
     }
     //check time left
     else if (content.startsWith("mafia.time") || content.startsWith("timecheck")) {
@@ -105,12 +109,7 @@ client.on('message', msg => { try {
     }
     //kill a player
     else if (content.startsWith("mafia.kill")) {
-        if(msg.author.username == game.mod.username || msg.author.username == 'Bullish') {
-            game.kill(msg);
-        }
-        else {
-            msg.channel.send('This is a mod-only action. ')
-        }
+        if(auth) { game.kill(msg) }
     }
     //vote to lynch a player
     else if (content.startsWith("vtl ") || content.startsWith("vte ") || content.startsWith("vote ")) {
@@ -130,34 +129,23 @@ client.on('message', msg => { try {
     }
     //reset vote count
     else if (content.startsWith("mafia.resetvotes") || content.startsWith("mafia.rv")) {
-        if(msg.author.username == game.mod.username || msg.author.username == 'Bullish') {
-            game.resetvotes(msg);
-        }
-        else {
-            msg.channel.send('This is a mod-only action. ')
-        }
+        if(auth) { game.resetvotes(msg) }
     }
     //reset all values
     else if (content.startsWith("mafia.reset")) {
-        if(msg.author.username == game.mod.username || msg.author.username == 'Bullish') {
-            game.reset(msg);
-        }
-        else {
-            msg.channel.send('This is a mod-only action. ')
-        }
+        if(auth) { game.reset(msg) }
     }
     //revive all players
     else if (content.startsWith("mafia.revive")) {
-        if(msg.author.username == game.mod.username || msg.author.username == 'Bullish') {
-            game.revive(msg);
-        }
-        else {
-            msg.channel.send('This is a mod-only action. ')
-        }
+        if(auth) { game.revive(msg) }
     }
     //display help text
     else if (content.startsWith("mafia.help")) {
         game.help(msg);
+    }
+    //display more help text
+    else if (content.startsWith("mafia.morehelp")) {
+        game.morehelp(msg);
     }
 }
 catch(err) {

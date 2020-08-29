@@ -9,6 +9,7 @@ class Mafia {
     };
     playersList = [];
     timer = null;
+    countdown = null;
 
     _player = {
         name: null,
@@ -32,6 +33,22 @@ class Mafia {
         else {
             this.title = "Mafia"
         }
+
+        let embed = {
+            color: "FF00FF",
+            title: "The mod is: " + this.gameMod.displayName
+        }
+
+        msg.channel.send({embed: embed})
+    }
+
+    makemod(msg) {
+        let contentArray = msg.content.split(" ")
+        let name = contentArray[1]
+
+        this.gameMod.username = null
+        this.gameMod.displayName = name
+        this.title = "Mafia"
 
         let embed = {
             color: "FF00FF",
@@ -67,11 +84,26 @@ class Mafia {
     leave(msg) {
         for(let player of this.playersList) {
             if(msg.member.displayName.toUpperCase() == player.name.toUpperCase()) {
-                this.playersList.splice(this.playersList.indexOf(player, 1))
+                this.playersList.splice(this.playersList.indexOf(player), 1)
                 msg.channel.send(msg.member.displayName + " left the game. ")
                 return
             }
         }
+    }
+
+    addmany(msg) {
+        let contentArray = msg.content.split(" ")
+
+        for(let name of contentArray.slice(1)) {
+            this.playersList.push({
+                name: name,
+                alive: true,
+                note: '',
+                vtl: null
+            })
+        }
+
+        this.players(msg)
     }
 
     add(msg) {
@@ -156,33 +188,35 @@ class Mafia {
 
     start(msg) {
         let contentArray = msg.content.split(" ")
-        let time = contentArray[1] || "0"
+        let time = contentArray[1] || "15"
         time = parseInt(time) * 60 // time in seconds
 
-        clearTimeout(this.timer)
+        this.stop(msg)
 
         let end = function() {
             if(this.timer == null) {
                 return;
             }
-            var timeleft = 30
+            var timeleft = this._countdownTime
             msg.channel.send(timeleft + "s remaining")
+
             let countdown = function() {
-                if(this.timer == null) {
-                    clearInterval(gameCountdown)
+                if(this.countdown == null) {
                     return;
                 }
                 timeleft = timeleft - 5
                 if(timeleft <= 0) {
-                    msg.channel.send("0s: **Phase ended.**")
-                    clearInterval(gameCountdown)
                     clearTimeout(this.timer)
+                    clearInterval(this.countdown)
                     this.timer = null
+                    this.countdown = null
+                    msg.channel.send("0s: **Phase ended.**")
                     return;
                 }
                 msg.channel.send(timeleft + "s remaining")
             }.bind(this)
-            var gameCountdown = setInterval(countdown, 5000)
+            this.countdown = setInterval(countdown, 5000)
+
         }.bind(this)
         this.timer = setTimeout(end, (time-this._countdownTime)*1000)
 
@@ -190,9 +224,11 @@ class Mafia {
     }
 
     stop(msg) {
-        if(this.timer) {
+        if(this.timer || this.countdown) {
             clearTimeout(this.timer)
+            clearInterval(this.countdown)
             this.timer = null
+            this.countdown = null
             msg.channel.send("**Phase stopped.**")
         }
     }
@@ -258,6 +294,7 @@ class Mafia {
             fields.players[0].note = fields.context
             fields.players[0].vtl = null
             message = `Killed player: **${fields.players[0].name}** - ${fields.players[0].note}`
+            this.resetvotes(msg)
         }
         else {
             message = "Multiple players with identifier found, please be more specific. "
@@ -356,7 +393,7 @@ class Mafia {
 
         for(let lynchee in votes) {
             if(votes[lynchee].length < votesToLynch) {
-                votesStr = votesStr + `${lynchee} (${votes[lynchee].length}/${votesToLynch}) - ${votes[lynchee]} \n`
+                votesStr = votesStr + `${lynchee} (${votes[lynchee].length}/${votesToLynch}) - ${votes[lynchee].join(", ")} \n`
             }
             else {
                 votesStr = "**" + votesStr + `${lynchee} (${votes[lynchee].length}/${votesToLynch}) - ${votes[lynchee].join(", ")}** \n`
@@ -408,34 +445,57 @@ class Mafia {
 
     help(msg) {
         let helpText = `
-            *Welcome to MafiaBot by Bullish.*
-            This bot's purpose is to help a mafia mod keep track of the players, who's playing, who's alive, the vote count, and the timer.
-            Type \`mafia.disable\` to disable the bot on this channel; \`mafia.enable\` to re-enable.
+            *Welcome to MafiaBot by Bullish and Speedrace.*
+            *This bot's purpose is to help a mafia mod keep track of the players, who's playing, who's alive, the vote count, and the timer.*
+            *Type \`mafia.disable\` to disable the bot on this channel; \`mafia.enable\` to re-enable.*
 
-            **Commands: **
-
-            \`mafia.mod [gameTitle]\` = make yourself mod, with [gameTitle] as the game's title.
-            \`mafia.join\` = join the game.
-            \`mafia.add [playerName]\` = add a player; [playerName] must be exact. Revives the player if they're already in the game.
-            \`mafia.kick [playerName]\` = kick a player; [playerName] pattern matches.
+            **General Commands: **
+            \`mafia.help\` = opens this help menu.
             \`mafia.players\` = list all players. *(alias mafia.ls)*
-            \`mafia.start [time]\` = starts a phase with [time] minutes on the clock.
-            \`mafia.stop\` = stops the phase.
             \`timecheck\` = shows time left in the phase.
-            \`mafia.status\` = shows some stats about the current game.
+            \`votecount\` = lists the current vote count. *(alias mafia.votes)*
+
+            **Mod Commands: **
+            \`mafia.mod [gameTitle]\` = make yourself mod, with [gameTitle] as the game's title.
+            \`mafia.start [time]\` = starts a phase with [time] minutes on the clock; default 15 minutes.
+            \`mafia.stop\` = stops the phase.
             \`mafia.kill [playerName] [deathMessage]\` = kills a player; [playerName] pattern matches; [deathMessage] displays after the player name.
+
+            **Player Commands: **
+            \`mafia.join\` = join the game.
+            \`mafia.leave\` = leave the game.
             \`vtl [playerName]\` = votes to lynch a player; [playerName] pattern matches. *(alias vte, vote)*
             \`unvote\` = unvotes.
-            \`votecount\` = lists the current vote count. *(alias mafia.votes)*
-            \`mafia.resetvotes\` = resets the vote count to 0. *(alias mafia.rv)*
-            \`mafia.reset\` = reset all game variables.
-            \`mafia.revive\` = revive all players.
-            \`mafia.help\` = opens this help menu.
+
+            *Type \`mafia.morehelp\` for more help.*
         `
 
         let embed = {
-            color: "888888",
+            color: "CCCCCC",
             title: "How to use this bot: ",
+            description: helpText
+        }
+
+        msg.channel.send({embed: embed})
+    }
+
+    morehelp(msg) {
+        let helpText = `
+            \`mafia.makemod [playerName]\` = make [playerName] the mod.
+            \`mafia.add [playerName]\` = add a player; [playerName] must be exact. Revives the player if they're already in the game.
+            \`mafia.addmany [playerName] [playerName] [playerName] ...\` = add several players at once.
+            \`mafia.kick [playerName]\` = kick a player; [playerName] pattern matches.
+            \`mafia.status\` = shows some stats about the current game.
+            \`mafia.resetvotes\` = resets the vote count to 0. *(alias mafia.rv)*
+            \`mafia.reset\` = reset all game variables.
+            \`mafia.revive\` = revive all players.
+
+            *Visit https://github.com/Bu11ish/Discord-MafiaBot for the source code.*
+        `
+
+        let embed = {
+            color: "222222",
+            title: "More help: ",
             description: helpText
         }
 
