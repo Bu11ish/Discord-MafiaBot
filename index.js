@@ -25,9 +25,6 @@ client.on('message', msg => { try {
       return
     }
     let content = msg.content.toLowerCase()
-    if(test = false){
-      return
-    }
     if(content.startsWith("mafia.new")) {
       if(msg.guild == null){
         msg.channel.send("Don't do this command in DMs, do it in the channel where the game will be hosted.")
