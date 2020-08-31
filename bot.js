@@ -39,7 +39,7 @@ client.on('message', msg => { try {
 
     //auth header
     let auth = function() {
-        if(msg.member.displayName.toUpperCase() == game.gameMod.displayName.toUpperCase() || msg.author.username == 'Bullish') {
+        if(msg.member.displayName.toUpperCase() == game.gameMod.displayName.toUpperCase() || msg.author.username == 'Bullish1') {
             return true
         }
         else {
@@ -85,7 +85,7 @@ client.on('message', msg => { try {
     }
     //kick player
     else if (content.startsWith("mafia.kick")) {
-        if(auth) { game.kick(msg) }
+        if(auth()) { game.kick(msg) }
     }
     //list the players
     else if (content.startsWith("mafia.players") || content.startsWith("mafia.ls")) {
@@ -93,11 +93,11 @@ client.on('message', msg => { try {
     }
     //start the game timer
     else if (content.startsWith("mafia.start")) {
-        if(auth) { game.start(msg) }
+        if(auth()) { game.start(msg) }
     }
     //stop the game timer
     else if (content.startsWith("mafia.stop")) {
-        if(auth) { game.stop(msg) }
+        if(auth()) { game.stop(msg) }
     }
     //check time left
     else if (content.startsWith("mafia.time") || content.startsWith("timecheck")) {
@@ -109,7 +109,7 @@ client.on('message', msg => { try {
     }
     //kill a player
     else if (content.startsWith("mafia.kill")) {
-        if(auth) { game.kill(msg) }
+        if(auth()) { game.kill(msg) }
     }
     //vote to lynch a player
     else if (content.startsWith("vtl ") || content.startsWith("vte ") || content.startsWith("vote ")) {
@@ -129,15 +129,15 @@ client.on('message', msg => { try {
     }
     //reset vote count
     else if (content.startsWith("mafia.resetvotes") || content.startsWith("mafia.rv")) {
-        if(auth) { game.resetvotes(msg) }
+        if(auth()) { game.resetvotes(msg) }
     }
     //reset all values
     else if (content.startsWith("mafia.reset")) {
-        if(auth) { game.reset(msg) }
+        if(auth()) { game.reset(msg) }
     }
     //revive all players
     else if (content.startsWith("mafia.revive")) {
-        if(auth) { game.revive(msg) }
+        if(auth()) { game.revive(msg) }
     }
     //display help text
     else if (content.startsWith("mafia.help")) {

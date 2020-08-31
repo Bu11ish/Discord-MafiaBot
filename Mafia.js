@@ -291,7 +291,7 @@ class Mafia {
         }
         else if(fields.players.length == 1) {
             fields.players[0].alive = false
-            fields.players[0].note = fields.context
+            fields.players[0].note = fields.context.substring(0,100)
             fields.players[0].vtl = null
             message = `Killed player: **${fields.players[0].name}** - ${fields.players[0].note}`
             this.resetvotes(msg)
@@ -459,7 +459,7 @@ class Mafia {
             \`mafia.mod [gameTitle]\` = make yourself mod, with [gameTitle] as the game's title.
             \`mafia.start [time]\` = starts a phase with [time] minutes on the clock; default 15 minutes.
             \`mafia.stop\` = stops the phase.
-            \`mafia.kill [playerName] [deathMessage]\` = kills a player; [playerName] pattern matches; [deathMessage] displays after the player name.
+            \`mafia.kill [playerName] [deathMessage]\` = kills a player; [playerName] pattern matches; [deathMessage] displays after the player name, max 100 characters.
 
             **Player Commands: **
             \`mafia.join\` = join the game.
@@ -481,9 +481,9 @@ class Mafia {
 
     morehelp(msg) {
         let helpText = `
-            \`mafia.makemod [playerName]\` = make [playerName] the mod.
+            \`mafia.makemod [playerName]\` = make [playerName] the mod, must be exact.
             \`mafia.add [playerName]\` = add a player; [playerName] must be exact. Revives the player if they're already in the game.
-            \`mafia.addmany [playerName] [playerName] [playerName] ...\` = add several players at once.
+            \`mafia.addmany [playerName] [playerName] [playerName] ...\` = add several players at once, [playerName] must be exact.
             \`mafia.kick [playerName]\` = kick a player; [playerName] pattern matches.
             \`mafia.status\` = shows some stats about the current game.
             \`mafia.resetvotes\` = resets the vote count to 0. *(alias mafia.rv)*
