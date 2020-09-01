@@ -213,7 +213,9 @@ class Mafia {
                     msg.channel.send("0s: **Phase ended.**")
                     return;
                 }
-                msg.channel.send(timeleft + "s remaining")
+                if(timeleft != 25 && timeleft != 15) {
+                    msg.channel.send(timeleft + "s remaining")
+                }
             }.bind(this)
             this.countdown = setInterval(countdown, 5000)
 

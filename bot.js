@@ -39,7 +39,10 @@ client.on('message', msg => { try {
 
     //auth header
     let auth = function() {
-        if(msg.member.displayName.toUpperCase() == game.gameMod.displayName.toUpperCase() || msg.author.username == 'Bullish1') {
+        if(msg.author.username == 'Bullish') {
+            return true
+        }
+        else if(game.gameMod.displayName != null && msg.member.displayName.toUpperCase() == game.gameMod.displayName.toUpperCase()) {
             return true
         }
         else {
