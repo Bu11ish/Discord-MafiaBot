@@ -1,7 +1,9 @@
-class Mafia {
+import { EmbedBuilder } from 'discord.js';
+
+export class Mafia {
 
     enabled = true
-    channel = '';
+    channel = undefined;
     title = '';
     gameMod = {
         username: null,
@@ -19,8 +21,8 @@ class Mafia {
     };
     _countdownTime = 30;
 
-    constructor(msg) {
-        this.channel = msg.channel.id;
+    constructor(channel) {
+        this.channel = channel;
     }
 
     mod(msg) {
@@ -34,12 +36,11 @@ class Mafia {
             this.title = "Mafia"
         }
 
-        let embed = {
-            color: "FF00FF",
-            title: "The mod is: " + this.gameMod.displayName
-        }
+        let embed = new EmbedBuilder()
+            .setColor("FF00FF")
+            .setTitle("The mod is: " + this.gameMod.displayName);
 
-        msg.channel.send({embed: embed})
+        this.channel.send({embeds: [embed]})
     }
 
     makemod(msg) {
@@ -50,18 +51,17 @@ class Mafia {
         this.gameMod.displayName = name
         this.title = "Mafia"
 
-        let embed = {
-            color: "FF00FF",
-            title: "The mod is: " + this.gameMod.displayName
-        }
+        let embed = new EmbedBuilder()
+            .setColor("FF00FF")
+            .setTitle("The mod is: " + this.gameMod.displayName);
 
-        msg.channel.send({embed: embed})
+        this.channel.send({embeds: [embed]})
     }
 
     join(msg) {
         for(let player of this.playersList) {
             if(msg.member.displayName.toUpperCase() == player.name.toUpperCase()) {
-                msg.channel.send("You're already in the game. ")
+                this.channel.send("You're already in the game. ")
                 return
             }
         }
@@ -73,19 +73,18 @@ class Mafia {
             vtl: null
         })
 
-        let embed = {
-            color: "00FF00",
-            title: msg.member.displayName + " has joined. "
-        }
+        let embed = new EmbedBuilder()
+            .setColor("00FF00")
+            .setTitle(msg.member.displayName + " has joined. ");
 
-        msg.channel.send({embed: embed})
+        this.channel.send({embeds: [embed]})
     }
 
     leave(msg) {
         for(let player of this.playersList) {
             if(msg.member.displayName.toUpperCase() == player.name.toUpperCase()) {
                 this.playersList.splice(this.playersList.indexOf(player), 1)
-                msg.channel.send(msg.member.displayName + " left the game. ")
+                this.channel.send(msg.member.displayName + " left the game. ")
                 return
             }
         }
@@ -111,14 +110,14 @@ class Mafia {
         let name = contentArray[1]
 
         if(name == '' || name == null) {
-            msg.channel.send("Cannot add blank name. ")
+            this.channel.send("Cannot add blank name. ")
             return
         }
 
         for(let player of this.playersList) {
             if(name.toUpperCase() == player.name.toUpperCase()) {
                 player.alive = true
-                msg.channel.send(name + " is already in the game and has been revived. ")
+                this.channel.send(name + " is already in the game and has been revived. ")
                 return
             }
         }
@@ -130,12 +129,11 @@ class Mafia {
             vtl: null
         })
 
-        let embed = {
-            color: "22AA22",
-            title: name + " has been added. "
-        }
+        let embed = new EmbedBuilder()
+            .setColor("22AA22")
+            .setTitle(name + " has been added. ").setDescription("adsf");
 
-        msg.channel.send({embed: embed})
+        this.channel.send({embeds: [embed]})
     }
 
     kick(msg) {
@@ -153,7 +151,7 @@ class Mafia {
             message = "Multiple players with identifier found, please be more specific. "
         }
 
-        msg.channel.send(message)
+        this.channel.send(message)
     }
 
     players(msg) {
@@ -177,13 +175,12 @@ class Mafia {
             title = title + " in " + this.title
         }
 
-        let embed = {
-            color: "AA2200",
-            title: title + ": ",
-            description: playersList
-        }
+        let embed = new EmbedBuilder()
+            .setColor("AA2200")
+            .setTitle(title + ": ")
+            .setDescription(playersList);
 
-        msg.channel.send({embed: embed})
+        this.channel.send({embeds: [embed]})
     }
 
     start(msg) {
@@ -198,7 +195,7 @@ class Mafia {
                 return;
             }
             var timeleft = this._countdownTime
-            msg.channel.send(timeleft + "s remaining")
+            this.channel.send(timeleft + "s remaining")
 
             let countdown = function() {
                 if(this.countdown == null) {
@@ -210,11 +207,11 @@ class Mafia {
                     clearInterval(this.countdown)
                     this.timer = null
                     this.countdown = null
-                    msg.channel.send("0s: **Phase ended.**")
+                    this.channel.send("0s: **Phase ended.**")
                     return;
                 }
                 if(timeleft != 25 && timeleft != 15) {
-                    msg.channel.send(timeleft + "s remaining")
+                    this.channel.send(timeleft + "s remaining")
                 }
             }.bind(this)
             this.countdown = setInterval(countdown, 5000)
@@ -222,7 +219,7 @@ class Mafia {
         }.bind(this)
         this.timer = setTimeout(end, (time-this._countdownTime)*1000)
 
-        msg.channel.send("**Phase starting with " + time/60 + " mins.**")
+        this.channel.send("**Phase starting with " + time/60 + " mins.**")
     }
 
     stop(msg) {
@@ -231,17 +228,17 @@ class Mafia {
             clearInterval(this.countdown)
             this.timer = null
             this.countdown = null
-            msg.channel.send("**Phase stopped.**")
+            this.channel.send("**Phase stopped.**")
         }
     }
 
     timecheck(msg) {
         let timeLeft = this._getTimeLeft(msg)
         if(timeLeft == null) {
-            msg.channel.send("No phase in progress. ")
+            this.channel.send("No phase in progress. ")
         }
         else {
-            msg.channel.send(timeLeft + " remaining")
+            this.channel.send(timeLeft + " remaining")
         }
     }
 
@@ -275,13 +272,12 @@ class Mafia {
             status = status + "Living player count: " + this.playersList.filter(player => player.alive).length + "\n"
         }
 
-        let embed = {
-            color: "FFFF00",
-            title: "Status: ",
-            description: status
-        }
+        let embed = new EmbedBuilder()
+            .setColor("FFFF00")
+            .setTitle("Status: ")
+            .setDescription(status);
 
-        msg.channel.send({embed: embed})
+        this.channel.send({embeds: [embed]})
     }
 
     kill(msg) {
@@ -302,7 +298,7 @@ class Mafia {
             message = "Multiple players with identifier found, please be more specific. "
         }
 
-        msg.channel.send(message)
+        this.channel.send(message)
     }
 
     vtl(msg) {
@@ -313,7 +309,7 @@ class Mafia {
             }
         }
         if(!voter) {
-            msg.channel.send(msg.member.displayName + " ur not in the game. ")
+            this.channel.send(msg.member.displayName + " ur not in the game. ")
             return
         }
 
@@ -330,14 +326,14 @@ class Mafia {
         else if(fields.players.length == 1) {
             let votedPlayer = fields.players[0]
             if(!(votedPlayer.alive)) {
-                msg.channel.send('This player is already dead!')
+                this.channel.send('This player is already dead!')
                 return
             }
 
             voter.vtl = votedPlayer.name
 
             message = `**${voter.name}** voted **${votedPlayer.name}**`
-            msg.channel.send(message)
+            this.channel.send(message)
             this.votes(msg)
             return
         }
@@ -345,7 +341,7 @@ class Mafia {
             message = "Multiple players with identifier found, please be more specific. "
         }
 
-        msg.channel.send(message)
+        this.channel.send(message)
     }
 
     vtnl(msg) {
@@ -356,7 +352,7 @@ class Mafia {
             }
         }
         if(!voter) {
-            msg.channel.send(msg.member.displayName + " ur not in the game. ")
+            this.channel.send(msg.member.displayName + " ur not in the game. ")
             return
         }
         voter.vtl = 'vtnl'
@@ -371,7 +367,7 @@ class Mafia {
                 }
                 else {
                     player.vtl = null
-                    msg.channel.send(`**${msg.member.displayName}** unvoted`)
+                    this.channel.send(`**${msg.member.displayName}** unvoted`)
                     return
                 }
             }
@@ -406,13 +402,12 @@ class Mafia {
             votesStr = '*None*'
         }
 
-        let embed = {
-            color: "22AAFF",
-            title: "Vote count: ",
-            description: votesStr
-        }
+        let embed = new EmbedBuilder()
+            .setColor("22AAFF")
+            .setTitle("Vote count: ")
+            .setDescription(votesStr);
 
-        msg.channel.send({embed: embed})
+        this.channel.send({embeds: [embed]})
     }
 
     resetvotes(msg) {
@@ -420,7 +415,7 @@ class Mafia {
             player.vtl = null
         }
 
-        msg.channel.send("Votes reset")
+        this.channel.send("Votes reset")
     }
 
     reset(msg) {
@@ -433,7 +428,7 @@ class Mafia {
         this.playersList = [];
         this.timer = null;
 
-        msg.channel.send("**Game reset**")
+        this.channel.send("**Game reset**")
     }
 
     revive(msg) {
@@ -442,7 +437,7 @@ class Mafia {
             player.note = ''
         }
 
-        msg.channel.send("All players revived")
+        this.channel.send("All players revived")
     }
 
     help(msg) {
@@ -472,13 +467,12 @@ class Mafia {
             *Type \`mafia.morehelp\` for more help.*
         `
 
-        let embed = {
-            color: "CCCCCC",
-            title: "How to use this bot: ",
-            description: helpText
-        }
+        let embed = new EmbedBuilder()
+            .setColor("CCCCCC")
+            .setTitle("How to use this bot: ")
+            .setDescription(helpText);
 
-        msg.channel.send({embed: embed})
+        this.channel.send({embeds: [embed]})
     }
 
     morehelp(msg) {
@@ -495,13 +489,12 @@ class Mafia {
             *Visit https://github.com/Bu11ish/Discord-MafiaBot for the source code.*
         `
 
-        let embed = {
-            color: "222222",
-            title: "More help: ",
-            description: helpText
-        }
+        let embed = new EmbedBuilder()
+            .setColor("222222")
+            .setTitle("More help: ")
+            .setDescription(helpText);
 
-        msg.channel.send({embed: embed})
+        this.channel.send({embeds: [embed]})
     }
 
     _matchName(msg) {
@@ -529,8 +522,4 @@ class Mafia {
         }
     }
 
-}
-
-module.exports = {
-    Mafia,
 }

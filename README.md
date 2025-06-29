@@ -10,9 +10,9 @@ Do `npm install`
 
 # Run
 
-Run the `bot.js` file with node
+Run the `src/bot.js` file with node
 
-`node bot.js`
+`node src/bot.js`
 
 Or do `npm run start`
 

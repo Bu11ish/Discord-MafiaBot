@@ -1,9 +1,0 @@
-{
-    "name": "MafiaBot",
-    "version": "1.0.0",
-    "description": "Counts votes in a mafia game. ",
-    "main": "index.js",
-    "author": "Bullish",
-    "authUrl": "https://discord.com/oauth2/authorize?client_id=745678977837957210&scope=bot&permissions=2048",
-    "dependencies": {}
-}

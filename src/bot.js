@@ -1,18 +1,23 @@
-var auth = require('./auth.json');
-const { Mafia } = require('./Mafia');
+import { Mafia } from './mafia.js';
+import { Client, Events, GatewayIntentBits, ActivityType } from 'discord.js';
+import auth from '../auth.json' with { type: "json" };
 
-var channels = {}
+const channels = {}
 
-const Discord = require('discord.js');
-const client = new Discord.Client();
+const client = new Client({ intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
+]});
+
 client.login(auth.token);
 
-client.on('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`);
-    client.user.setActivity('mafia.help', { type: 'WATCHING' })
+client.once(Events.ClientReady, readyClient => {
+	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+    readyClient.user.setActivity({name: 'mafia.help', type: ActivityType.Watching })
 });
 
-client.on('message', msg => { try {
+client.on(Events.MessageCreate, msg => { try {
     // console.log('======= START =======');
     // console.log('msg', msg);
     // console.log('msg.nickname', msg.member.displayName);
@@ -33,9 +38,10 @@ client.on('message', msg => { try {
     //     console.log("message forwarded")
     // }
 
-    //add channel to channelGame
-    if(!(msg.channel.id in channels)) {
-        channels[msg.channel.id] = new Mafia(msg)
+    //add channel to channels
+    if(!(msg.channel.id in channels)) {        
+        let channel = client.channels.cache.get(msg.channelId);
+        channels[msg.channel.id] = new Mafia(channel)
     }
     let game = channels[msg.channel.id]
     let content = msg.content.toLowerCase()
@@ -46,7 +52,7 @@ client.on('message', msg => { try {
 
     //auth header
     let auth = function() {
-        if(msg.author.username == 'Bullish') {
+        if(msg.author.username == 'bu11ish') {
             return true
         }
         else if(game.gameMod.displayName != null && msg.member.displayName.toUpperCase() == game.gameMod.displayName.toUpperCase()) {
