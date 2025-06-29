@@ -24,6 +24,13 @@ client.on('message', msg => { try {
     // if(msg.channel.id in ['713559089644437506']) {
     //     console.log("disabled on this server")
     //     return
+    // }    
+
+    // forward message from 746500317813669951 to 1081225072909484155/713559089644437506
+    // if(msg.channel.id === '746500317813669951' && !msg.author.bot) {
+    //     let c = client.channels.valueOf().find(channel => channel.id === '713559089644437506')
+    //     c.send(msg.content)
+    //     console.log("message forwarded")
     // }
 
     //add channel to channelGame
