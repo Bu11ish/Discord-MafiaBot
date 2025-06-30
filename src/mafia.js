@@ -64,6 +64,7 @@ export class Mafia {
     join(msg) {
         for(let player of this.playersList) {
             if(msg.author.username.toUpperCase() == player.username.toUpperCase()) {
+                player.displayName = msg.author.displayName
                 this.channel.send("You're already in the game. ")
                 return
             }
@@ -94,50 +95,33 @@ export class Mafia {
         }
     }
 
-    addmany(msg) {
-        let contentArray = msg.content.split(" ")
-
-        for(let name of contentArray.slice(1)) {
-            this.playersList.push({
-                username: name,
-                displayName: name,
-                alive: true,
-                note: '',
-                vtl: null
-            })
-        }
-
-        this.players(msg)
-    }
-
     add(msg) {
-        let contentArray = msg.content.split(" ")
-        let name = contentArray[1]
+        let playersAdded = 0
 
-        if(name == '' || name == null) {
-            this.channel.send("Cannot add blank name. ")
-            return
-        }
-
-        for(let player of this.playersList) {
-            if(name.toUpperCase() == player.displayName.toUpperCase()) {
+        for(let playerToAdd of msg.mentions.users.values().take(5)) {
+            let player = this.playersList.find(player => {
+                return player.username.toUpperCase() == playerToAdd.username.toUpperCase()
+            })
+            if(player) {
                 player.alive = true
-                this.channel.send(name + " is already in the game and has been revived. ")
-                return
+                player.displayName = playerToAdd.displayName
+                this.channel.send(player.displayName + " is already in the game and has been revived. ")
+            }
+            else {
+                playersAdded++
+                this.playersList.push({
+                    username: playerToAdd.username,
+                    displayName: playerToAdd.displayName,
+                    alive: true,
+                    note: '',
+                    vtl: null
+                })
             }
         }
 
-        this.playersList.push({
-            username: name,
-            displayName: name,
-            alive: true,
-            note: '',
-            vtl: null
-        })
-
         let embed = new EmbedBuilder()
             .setColor("22AA22")
-            .setTitle(name + " has been added. ");
+            .setTitle(playersAdded + " players added. ");
 
         this.channel.send({embeds: [embed]})
     }
@@ -484,8 +468,7 @@ export class Mafia {
     morehelp(msg) {
         let helpText = `
             \`mafia.makemod [playerName]\` = make [playerName] the mod, must be exact.
-            \`mafia.add [playerName]\` = add a player; [playerName] must be exact. Revives the player if they're already in the game.
-            \`mafia.addmany [playerName] [playerName] [playerName] ...\` = add several players at once, [playerName] must be exact.
+            \`mafia.add [playerMentions...]\` = add a player; [playerMentions...] is up to 5 user mentions. Revives the player if they're already in the game.
             \`mafia.kick [playerName]\` = kick a player; [playerName] pattern matches.
             \`mafia.status\` = shows some stats about the current game.
             \`mafia.resetvotes\` = resets the vote count to 0. *(alias mafia.rv)*

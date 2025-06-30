@@ -127,13 +127,9 @@ function processCommands(msg, game) {
         case "mafia.leave":
             game.leave(msg);
             break;
-        //manually add a player
+        //manually add players
         case "mafia.add":
             game.add(msg);
-            break;
-        //manually add a list of players separeated by " "
-        case "mafia.addmany":
-            game.addmany(msg);
             break;
         //kick player
         case "mafia.kick":
