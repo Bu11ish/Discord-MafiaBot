@@ -1,8 +1,13 @@
 import { Mafia } from './mafia.js';
 import { Client, Events, GatewayIntentBits, ActivityType } from 'discord.js';
-import auth from '../auth.json' with { type: "json" };
+import botAuth from '../auth.json' with { type: "json" };
 
-const channels = {}
+/**
+ * {
+ *  [channelId: string]: Mafia
+ * }
+ */
+const channels = {} 
 
 const client = new Client({ intents: [
     GatewayIntentBits.Guilds,
@@ -10,26 +15,21 @@ const client = new Client({ intents: [
     GatewayIntentBits.MessageContent
 ]});
 
-client.login(auth.token);
+client.login(botAuth.token);
 
 client.once(Events.ClientReady, readyClient => {
 	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
     readyClient.user.setActivity({name: 'mafia.help', type: ActivityType.Watching })
 });
 
-client.on(Events.MessageCreate, msg => { try {
+client.on(Events.MessageCreate, msg => {
+    // debug
     // console.log('======= START =======');
     // console.log('msg', msg);
     // console.log('msg.nickname', msg.member.displayName);
     // console.log('msg.content', msg.content);
     // console.log('msg.embeds', msg.embeds);
     // console.log('======= END =======');
-
-    // disable bot on certain channels
-    // if(msg.channel.id in ['713559089644437506']) {
-    //     console.log("disabled on this server")
-    //     return
-    // }    
 
     // forward message from 746500317813669951 to 1081225072909484155/713559089644437506
     // if(msg.channel.id === '746500317813669951' && !msg.author.bot) {
@@ -39,132 +39,162 @@ client.on(Events.MessageCreate, msg => { try {
     // }
 
     //add channel to channels
-    if(!(msg.channel.id in channels)) {        
-        let channel = client.channels.cache.get(msg.channelId);
-        channels[msg.channel.id] = new Mafia(channel)
+    if(!(msg.channelId in channels)) {
+        channels[msg.channelId] = new Mafia(msg.channel)
     }
-    let game = channels[msg.channel.id]
-    let content = msg.content.toLowerCase()
-    //check if bot is enabled, only listen for "mafia.enable"
-    if(!game.enabled && content != "mafia.enable") {
-        return
-    }
+    let game = channels[msg.channelId]
 
-    //auth header
-    let auth = function() {
-        if(msg.author.username == 'bu11ish') {
-            return true
-        }
-        else if(game.gameMod.displayName != null && msg.member.displayName.toUpperCase() == game.gameMod.displayName.toUpperCase()) {
-            return true
-        }
-        else {
-            msg.channel.send('This is a mod-only action. ')
-            return false
-        }
-    }
-
-    //enable the bot
-    if (content.startsWith("mafia.enable")) {
-        game.enabled = true
-        msg.channel.send('Bot enabled')
-    }
-    //disable the bot
-    if (content.startsWith("mafia.disable")) {
-        game.enabled = false
-        msg.channel.send('Bot disabled')
-    }
-
-    //join a game as mod
-    if (content.startsWith("mafia.mod")) {
-        game.mod(msg)
-    }
-    //manually appoint a mod
-    if (content.startsWith("mafia.makemod")) {
-        game.makemod(msg)
-    }
-    //join the game as player
-    else if (content.startsWith("mafia.join")) {
-        game.join(msg);
-    }
-    //leave the game as player
-    else if (content.startsWith("mafia.leave")) {
-        game.leave(msg);
-    }
-    //manually add a player
-    else if (content.startsWith("mafia.add ")) {
-        game.add(msg);
-    }
-    //manually add a list of players separeated by " "
-    else if (content.startsWith("mafia.addmany ")) {
-        game.addmany(msg);
-    }
-    //kick player
-    else if (content.startsWith("mafia.kick")) {
-        if(auth()) { game.kick(msg) }
-    }
-    //list the players
-    else if (content.startsWith("mafia.players") || content.startsWith("mafia.ls")) {
-        game.players(msg);
-    }
-    //start the game timer
-    else if (content.startsWith("mafia.start")) {
-        if(auth()) { game.start(msg) }
-    }
-    //stop the game timer
-    else if (content.startsWith("mafia.stop")) {
-        if(auth()) { game.stop(msg) }
-    }
-    //check time left
-    else if (content.startsWith("mafia.time") || content.startsWith("timecheck")) {
-        game.timecheck(msg);
-    }
-    //display some stats about the game
-    else if (content.startsWith("mafia.status")) {
-        game.status(msg);
-    }
-    //kill a player
-    else if (content.startsWith("mafia.kill")) {
-        if(auth()) { game.kill(msg) }
-    }
-    //vote to lynch a player
-    else if (content.startsWith("vtl ") || content.startsWith("vte ") || content.startsWith("vote ")) {
-        game.vtl(msg);
-    }
-    //vote to no lynch
-    else if (content.startsWith("vtnl") || content.startsWith("vtne")) {
-        game.vtnl(msg);
-    }
-    //unvote
-    else if (content.startsWith("unvote")) {
-        game.unvote(msg);
-    }
-    //display the vote count
-    else if (content.startsWith("mafia.votes") || content.startsWith("mafia.votecount") || content.startsWith("votecount")) {
-        game.votes(msg);
-    }
-    //reset vote count
-    else if (content.startsWith("mafia.resetvotes") || content.startsWith("mafia.rv")) {
-        if(auth()) { game.resetvotes(msg) }
-    }
-    //reset all values
-    else if (content.startsWith("mafia.reset")) {
-        if(auth()) { game.reset(msg) }
-    }
-    //revive all players
-    else if (content.startsWith("mafia.revive")) {
-        if(auth()) { game.revive(msg) }
-    }
-    //display help text
-    else if (content.startsWith("mafia.help")) {
-        game.help(msg);
-    }
-    //display more help text
-    else if (content.startsWith("mafia.morehelp")) {
-        game.morehelp(msg);
-    }
-}
-catch(err) {
-    console.log('err', err)
-}
+    // process commands
+    // try {
+        processCommands(msg, game);
+    // }
+    // fail without crashing
+    // catch (e) {
+    //     console.error(e);
+    // }
 });
+
+function getCommandSegment(msg) {
+    let firstWordIndex = msg.content.indexOf(" ")
+    firstWordIndex = firstWordIndex !== -1 ? firstWordIndex : msg.content.length
+    return msg.content
+        .substr(0, firstWordIndex)
+        .toLowerCase();
+}
+
+function auth(msgMember, game) {
+    if(msgMember.username == 'bu11ish') {
+        return true
+    }
+    else if(game.gameMod.displayName != null && msgMember.displayName.toUpperCase() == game.gameMod.displayName.toUpperCase()) {
+        return true
+    }
+    else {
+        msg.channel.send('This is a mod-only action. ')
+        return false
+    }
+}
+
+function processCommands(msg, game) {
+    let command = getCommandSegment(msg);
+    
+    // if bot is disabled, only listen for "mafia.enable"
+    if(!game.enabled && command != "mafia.enable") {
+        return;
+    }
+    // ignore messages from bots
+    if(msg.author.bot) {
+        return;
+    }
+
+    // process commands
+    switch (command) {
+        //enable the bot
+        case "mafia.enable":
+            game.enabled = true
+            game.channel.send('Bot enabled')
+            break;
+        //disable the bot
+        case "mafia.disable":
+            game.enabled = false
+            game.channel.send('Bot disabled')
+            break;
+        //join a game as mod
+        case "mafia.mod":
+            game.mod(msg)
+            break;
+        //manually appoint a mod
+        case "mafia.makemod":
+            game.makemod(msg)
+            break;
+        //join the game as player
+        case "mafia.join":
+            game.join(msg);
+            break;
+        //leave the game as player
+        case "mafia.leave":
+            game.leave(msg);
+            break;
+        //manually add a player
+        case "mafia.add":
+            game.add(msg);
+            break;
+        //manually add a list of players separeated by " "
+        case "mafia.addmany":
+            game.addmany(msg);
+            break;
+        //kick player
+        case "mafia.kick":
+            if(auth(msg.member, game)) { game.kick(msg) }
+            break;
+        //list the players
+        case "mafia.players":
+        case "mafia.list":
+        case "mafia.ls":
+            game.players(msg);
+            break;
+        //start the game timer
+        case "mafia.start":
+            if(auth(msg.member, game)) { game.start(msg) }
+            break;
+        //stop the game timer
+        case "mafia.stop":
+            if(auth(msg.member, game)) { game.stop(msg) }
+            break;
+        //check time left
+        case "mafia.time":
+        case "timecheck":
+            game.timecheck(msg);
+            break;
+        //display some stats about the game
+        case "mafia.status":
+            game.status(msg);
+            break;
+        //kill a player
+        case "mafia.kill":
+            if(auth(msg.member, game)) { game.kill(msg) }
+            break;
+        //vote to lynch a player
+        case "vtl":
+        case "vte":
+        case "vote":
+            game.vtl(msg);
+            break;
+        //vote to no lynch
+        case "vtnl":
+        case "vtne":
+            game.vtnl(msg);
+            break;
+        //unvote
+        case "unvote":
+            game.unvote(msg);
+            break;
+        //display the vote count
+        case "mafia.votes":
+        case "mafia.votecount":
+        case "votecount":
+            game.votes(msg);
+            break;
+        //reset vote count
+        case "mafia.resetvotes":
+        case "mafia.rv":
+            if(auth(msg.member, game)) { game.resetvotes(msg) }
+            break;
+        //reset all values
+        case "mafia.reset":
+            if(auth(msg.member, game)) { game.reset(msg) }
+            break;
+        //revive all players
+        case "mafia.revive":
+            if(auth(msg.member, game)) { game.revive(msg) }
+            break;
+        //display help text
+        case "mafia.help":
+            game.help(msg);
+            break;
+        //display more help text
+        case "mafia.morehelp":
+            game.morehelp(msg);
+            break;
+    }
+}
