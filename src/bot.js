@@ -31,42 +31,54 @@ client.on(Events.MessageCreate, msg => {
     // console.log('msg.embeds', msg.embeds);
     // console.log('======= END =======');
 
-    // forward message from 746500317813669951 to 1081225072909484155/713559089644437506
-    // if(msg.channel.id === '746500317813669951' && !msg.author.bot) {
-    //     let c = client.channels.valueOf().find(channel => channel.id === '713559089644437506')
-    //     c.send(msg.content)
-    //     console.log("message forwarded")
-    // }
-
     //add channel to channels
     if(!(msg.channelId in channels)) {
         channels[msg.channelId] = new Mafia(msg.channel)
     }
     let game = channels[msg.channelId]
+    
+    // forward message 
+    if(getCommandSegment(msg) === "mafia.forward" && msg.author.username == 'bu11ish') {
+        let firstIndex = msg.content.indexOf(" ")
+        let secondIndex = msg.content.indexOf(" ", firstIndex+1)
+        let channelId = msg.content.substring(
+            firstIndex+1,
+            secondIndex
+        )
+        let game = channels[channelId]
+        if(game) {
+            let contentToForward = msg.content.substring(secondIndex+1)
+            if(contentToForward) {
+                game.channel.send(contentToForward)
+                console.log("message forwarded")
+                return;
+            }
+        }
+    }
 
     // process commands
-    // try {
+    try {
         processCommands(msg, game);
-    // }
+    }
     // fail without crashing
-    // catch (e) {
-    //     console.error(e);
-    // }
+    catch (e) {
+        console.error(e);
+    }
 });
 
 function getCommandSegment(msg) {
     let firstWordIndex = msg.content.indexOf(" ")
     firstWordIndex = firstWordIndex !== -1 ? firstWordIndex : msg.content.length
     return msg.content
-        .substr(0, firstWordIndex)
+        .substring(0, firstWordIndex)
         .toLowerCase();
 }
 
-function auth(msgMember, game) {
-    if(msgMember.username == 'bu11ish') {
+function auth(msgAuthor, game) {
+    if(msgAuthor.username == 'bu11ish') {
         return true
     }
-    else if(game.gameMod.displayName != null && msgMember.displayName.toUpperCase() == game.gameMod.displayName.toUpperCase()) {
+    else if(game.gameMod.username != null && msgAuthor.username.toUpperCase() == game.gameMod.username.toUpperCase()) {
         return true
     }
     else {
@@ -125,7 +137,7 @@ function processCommands(msg, game) {
             break;
         //kick player
         case "mafia.kick":
-            if(auth(msg.member, game)) { game.kick(msg) }
+            if(auth(msg.author, game)) { game.kick(msg) }
             break;
         //list the players
         case "mafia.players":
@@ -135,11 +147,11 @@ function processCommands(msg, game) {
             break;
         //start the game timer
         case "mafia.start":
-            if(auth(msg.member, game)) { game.start(msg) }
+            if(auth(msg.author, game)) { game.start(msg) }
             break;
         //stop the game timer
         case "mafia.stop":
-            if(auth(msg.member, game)) { game.stop(msg) }
+            if(auth(msg.author, game)) { game.stop(msg) }
             break;
         //check time left
         case "mafia.time":
@@ -152,7 +164,7 @@ function processCommands(msg, game) {
             break;
         //kill a player
         case "mafia.kill":
-            if(auth(msg.member, game)) { game.kill(msg) }
+            if(auth(msg.author, game)) { game.kill(msg) }
             break;
         //vote to lynch a player
         case "vtl":
@@ -178,15 +190,15 @@ function processCommands(msg, game) {
         //reset vote count
         case "mafia.resetvotes":
         case "mafia.rv":
-            if(auth(msg.member, game)) { game.resetvotes(msg) }
+            if(auth(msg.author, game)) { game.resetvotes(msg) }
             break;
         //reset all values
         case "mafia.reset":
-            if(auth(msg.member, game)) { game.reset(msg) }
+            if(auth(msg.author, game)) { game.reset(msg) }
             break;
         //revive all players
         case "mafia.revive":
-            if(auth(msg.member, game)) { game.revive(msg) }
+            if(auth(msg.author, game)) { game.revive(msg) }
             break;
         //display help text
         case "mafia.help":
