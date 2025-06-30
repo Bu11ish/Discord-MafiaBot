@@ -2,23 +2,26 @@ import { EmbedBuilder } from 'discord.js';
 
 export class Mafia {
 
-    enabled = true
+    enabled = true;
     channel = undefined;
     title = '';
     gameMod = {
         username: null,
         displayName: null
     };
-    playersList = [];
-    timer = null;
-    countdown = null;
 
+    playersList = [];
     _player = {
+        username: null,
+        displayName: null,
         name: null,
         alive: true,
         note: '',
         vtl: null
     };
+
+    timer = null;
+    countdown = null;
     _countdownTime = 30;
 
     constructor(channel) {
@@ -60,14 +63,15 @@ export class Mafia {
 
     join(msg) {
         for(let player of this.playersList) {
-            if(msg.member.displayName.toUpperCase() == player.name.toUpperCase()) {
+            if(msg.author.username.toUpperCase() == player.username.toUpperCase()) {
                 this.channel.send("You're already in the game. ")
                 return
             }
         }
 
         this.playersList.push({
-            name: msg.member.displayName,
+            username: msg.author.username,
+            displayName: msg.author.displayName,
             alive: true,
             note: '',
             vtl: null
@@ -82,7 +86,7 @@ export class Mafia {
 
     leave(msg) {
         for(let player of this.playersList) {
-            if(msg.member.displayName.toUpperCase() == player.name.toUpperCase()) {
+            if(msg.author.username.toUpperCase() == player.username.toUpperCase()) {
                 this.playersList.splice(this.playersList.indexOf(player), 1)
                 this.channel.send(msg.member.displayName + " left the game. ")
                 return
@@ -95,7 +99,8 @@ export class Mafia {
 
         for(let name of contentArray.slice(1)) {
             this.playersList.push({
-                name: name,
+                username: name,
+                displayName: name,
                 alive: true,
                 note: '',
                 vtl: null
@@ -115,7 +120,7 @@ export class Mafia {
         }
 
         for(let player of this.playersList) {
-            if(name.toUpperCase() == player.name.toUpperCase()) {
+            if(name.toUpperCase() == player.displayName.toUpperCase()) {
                 player.alive = true
                 this.channel.send(name + " is already in the game and has been revived. ")
                 return
@@ -123,7 +128,8 @@ export class Mafia {
         }
 
         this.playersList.push({
-            name: name,
+            username: name,
+            displayName: name,
             alive: true,
             note: '',
             vtl: null
@@ -131,7 +137,7 @@ export class Mafia {
 
         let embed = new EmbedBuilder()
             .setColor("22AA22")
-            .setTitle(name + " has been added. ").setDescription("adsf");
+            .setTitle(name + " has been added. ");
 
         this.channel.send({embeds: [embed]})
     }
@@ -145,7 +151,7 @@ export class Mafia {
         }
         else if(fields.players.length == 1) {
             this.playersList.splice(this.playersList.indexOf(fields.players[0]), 1)
-            message = `Removed player: **${fields.players[0].name}**`
+            message = `Removed player: **${fields.players[0].displayName}**`
         }
         else {
             message = "Multiple players with identifier found, please be more specific. "
@@ -158,12 +164,12 @@ export class Mafia {
         let playersList = ''
         for(let player of this.playersList) {
             if(player.alive) {
-                playersList = playersList + "\n" + player.name
+                playersList = playersList + "\n" + player.displayName
             }
         }
         for(let player of this.playersList) {
             if(!player.alive) {
-                playersList = playersList + `\n~~${player.name}~~ - *dead - ${player.note}.*`
+                playersList = playersList + `\n~~${player.displayName}~~ - *dead - ${player.note}.*`
             }
         }
 
@@ -291,7 +297,7 @@ export class Mafia {
             fields.players[0].alive = false
             fields.players[0].note = fields.context.substring(0,100)
             fields.players[0].vtl = null
-            message = `Killed player: **${fields.players[0].name}** - ${fields.players[0].note}`
+            message = `Killed player: **${fields.players[0].displayName}** - ${fields.players[0].note}`
             this.resetvotes(msg)
         }
         else {
@@ -304,7 +310,7 @@ export class Mafia {
     vtl(msg) {
         let voter = null
         for(let player of this.playersList) {
-            if(msg.member.displayName.toUpperCase() == player.name.toUpperCase()) {
+            if(msg.author.username.toUpperCase() == player.username.toUpperCase()) {
                 voter = player
             }
         }
@@ -330,9 +336,9 @@ export class Mafia {
                 return
             }
 
-            voter.vtl = votedPlayer.name
+            voter.vtl = votedPlayer.displayName
 
-            message = `**${voter.name}** voted **${votedPlayer.name}**`
+            message = `**${voter.displayName}** voted **${votedPlayer.displayName}**`
             this.channel.send(message)
             this.votes(msg)
             return
@@ -347,7 +353,7 @@ export class Mafia {
     vtnl(msg) {
         let voter = null
         for(let player of this.playersList) {
-            if(msg.member.displayName.toUpperCase() == player.name.toUpperCase()) {
+            if(msg.author.username.toUpperCase() == player.username.toUpperCase()) {
                 voter = player
             }
         }
@@ -361,7 +367,7 @@ export class Mafia {
 
     unvote(msg) {
         for(let player of this.playersList) {
-            if(msg.member.displayName.toUpperCase() == player.name.toUpperCase()) {
+            if(msg.author.username.toUpperCase() == player.username.toUpperCase()) {
                 if(player.vtl == null) {
                     return
                 }
@@ -381,10 +387,10 @@ export class Mafia {
         for(let player of this.playersList) {
             if(player.vtl != null) {
                 if(votes[player.vtl]) {
-                    votes[player.vtl].push(player.name)
+                    votes[player.vtl].push(player.displayName)
                 }
                 else {
-                    votes[player.vtl] = [player.name]
+                    votes[player.vtl] = [player.displayName]
                 }
             }
         }
@@ -505,12 +511,12 @@ export class Mafia {
 
         if(name != '' && name != null) {
             for(let player of this.playersList) {
-                if(player.name.toUpperCase() == name.toUpperCase()) {
+                if(player.displayName.toUpperCase() == name.toUpperCase()) {
                     // if there is an exact match, return the first instance
                     selectedPlayers = [player]
                     break;
                 }
-                else if(player.name.toUpperCase().includes(name.toUpperCase())) {
+                else if(player.displayName.toUpperCase().includes(name.toUpperCase())) {
                     selectedPlayers.push(player)
                 }
             }
