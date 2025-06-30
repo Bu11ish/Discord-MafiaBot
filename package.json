@@ -1,6 +1,6 @@
 {
   "name": "discord-mafiabot",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Counts votes in a mafia game",
   "main": "src/bot.js",
   "type": "module",
