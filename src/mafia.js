@@ -48,11 +48,15 @@ export class Mafia {
 
     makemod(msg) {
         let contentArray = msg.content.split(" ")
-        let name = contentArray[1]
+        let mod = msg.mentions.users.values().take(1).next().value
 
-        this.gameMod.username = null
-        this.gameMod.displayName = name
-        this.title = "Mafia"
+        if(mod == null) {
+            return;
+        }
+
+        this.gameMod.username = mod.username
+        this.gameMod.displayName = mod.displayName
+        this.title = contentArray.slice(2).join(" ")
 
         let embed = new EmbedBuilder()
             .setColor("FF00FF")
@@ -153,7 +157,7 @@ export class Mafia {
         }
         for(let player of this.playersList) {
             if(!player.alive) {
-                playersList = playersList + `\n~~${player.displayName}~~ - *dead - ${player.note}.*`
+                playersList = playersList + `\n~~${player.displayName}~~ - *dead${player.note ? ' - ' + player.note : ''}.*`
             }
         }
 
@@ -281,7 +285,7 @@ export class Mafia {
             fields.players[0].alive = false
             fields.players[0].note = fields.context.substring(0,100)
             fields.players[0].vtl = null
-            message = `Killed player: **${fields.players[0].displayName}** - ${fields.players[0].note}`
+            message = `Killed player: **${fields.players[0].displayName}**${fields.players[0].note ? ' - ' + fields.players[0].note : ''}`
             this.resetvotes(msg)
         }
         else {
@@ -439,8 +443,8 @@ export class Mafia {
             **General Commands: **
             \`mafia.help\` = opens this help menu.
             \`mafia.players\` = list all players. *(alias mafia.ls)*
-            \`timecheck\` = shows time left in the phase.
-            \`votecount\` = lists the current vote count. *(alias mafia.votes)*
+            \`mafia.time\` = shows time left in the phase. *(alias timecheck)*
+            \`mafia.votes\` = lists the current vote count. *(alias votecount)*
 
             **Mod Commands: **
             \`mafia.mod [gameTitle]\` = make yourself mod, with [gameTitle] as the game's title.
@@ -467,13 +471,13 @@ export class Mafia {
 
     morehelp(msg) {
         let helpText = `
-            \`mafia.makemod [playerName]\` = make [playerName] the mod, must be exact.
+            \`mafia.makemod [playerMention] [gameTitle]\` = make [playerMention] the mod.
             \`mafia.add [playerMentions...]\` = add a player; [playerMentions...] is up to 5 user mentions. Revives the player if they're already in the game.
             \`mafia.kick [playerName]\` = kick a player; [playerName] pattern matches.
             \`mafia.status\` = shows some stats about the current game.
             \`mafia.resetvotes\` = resets the vote count to 0. *(alias mafia.rv)*
-            \`mafia.reset\` = reset all game variables.
             \`mafia.revive\` = revive all players.
+            \`mafia.reset\` = reset ALL game variables.
 
             *Visit https://github.com/Bu11ish/Discord-MafiaBot for the source code.*
         `
