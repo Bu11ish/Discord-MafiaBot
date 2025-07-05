@@ -61,8 +61,8 @@ client.on(Events.MessageCreate, msg => {
         processCommands(msg, game);
     }
     // fail without crashing
-    catch (e) {
-        console.error(e);
+    catch (err) {
+        console.error("[Caught Error]: ", err);
     }
 });
 
@@ -82,7 +82,7 @@ function auth(msgAuthor, game) {
         return true
     }
     else {
-        msg.channel.send('This is a mod-only action. ')
+        game.channel.send('This is a mod-only action. ')
         return false
     }
 }
@@ -203,6 +203,8 @@ function processCommands(msg, game) {
         //display more help text
         case "mafia.morehelp":
             game.morehelp(msg);
+            break;
+        default:
             break;
     }
 }

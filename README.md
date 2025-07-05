@@ -6,6 +6,8 @@ Aquire the auth token
 
 Rename the file `auth-example.json` to `auth.json` and replace the token
 
+Install node 22
+
 Do `npm install`
 
 # Run
