@@ -48,7 +48,7 @@ export class Mafia {
 
     makemod(msg) {
         let contentArray = msg.content.split(" ")
-        let mod = msg.mentions.users.values().take(1).next().value
+        let mod = msg.mentions.members.values().take(1).next().value
 
         if(mod == null) {
             return;
@@ -68,7 +68,7 @@ export class Mafia {
     join(msg) {
         for(let player of this.playersList) {
             if(msg.author.username.toUpperCase() == player.username.toUpperCase()) {
-                player.displayName = msg.author.displayName
+                player.displayName = msg.member.displayName
                 this.channel.send("You're already in the game. ")
                 return
             }
@@ -76,7 +76,7 @@ export class Mafia {
 
         this.playersList.push({
             username: msg.author.username,
-            displayName: msg.author.displayName,
+            displayName: msg.member.displayName,
             alive: true,
             note: '',
             vtl: null
@@ -102,7 +102,7 @@ export class Mafia {
     add(msg) {
         let playersAdded = 0
 
-        for(let playerToAdd of msg.mentions.users.values().take(5)) {
+        for(let playerToAdd of msg.mentions.members.values().take(5)) {
             let player = this.playersList.find(player => {
                 return player.username.toUpperCase() == playerToAdd.username.toUpperCase()
             })
